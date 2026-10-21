@@ -98,7 +98,7 @@ jobs:
       # GHCR_TOKEN: a token with packages:write on the organization that owns the image, needed when this
       # repository is not in that organization. Otherwise the workflow's own token is enough.
       - name: Sign in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

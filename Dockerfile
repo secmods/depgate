@@ -1,6 +1,6 @@
 # DepGate: web UI, API and package registries in one image, one port.
 #
-#   docker build -t depgate:0.1.0 .
+#   docker build -t depgate:1.0.0 .
 #
 # Production deployment (images only, no build): see deploy/README.md.
 

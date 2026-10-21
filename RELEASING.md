@@ -6,11 +6,11 @@ A release is a version tag. Pushing it runs `.github/workflows/release.yml`, whi
 
 ```bash
 git checkout main && git pull
-npm version 0.1.1            # or: minor, major
+npm version 1.0.1            # or: minor, major
 git push --follow-tags
 ```
 
-`npm version` bumps the root `package.json`, then runs `scripts/set-deploy-version.sh` (through the `version` script): it writes the same version into `deploy/all-in-one/.env.example`, `deploy/app-only/.env.example`, `deploy/kubernetes/kustomization.yaml` and the two workspace `package.json` files, refreshes `package-lock.json`, and stages them. The bump, the stamped files and the tag `v0.1.1` land in one commit.
+`npm version` bumps the root `package.json`, then runs `scripts/set-deploy-version.sh` (through the `version` script): it writes the same version into `deploy/all-in-one/.env.example`, `deploy/app-only/.env.example`, `deploy/kubernetes/kustomization.yaml` and the two workspace `package.json` files, refreshes `package-lock.json`, and stages them. The bump, the stamped files and the tag `v1.0.1` land in one commit.
 
 The workflow refuses a tag whose version differs from `package.json`, and a commit whose deploy files were edited by hand (`scripts/set-deploy-version.sh --check`, which CI also runs on every push).
 

@@ -32,7 +32,7 @@ The quick-start script writes a configuration file with generated secrets, creat
 The first run pulls the images. When it finishes, the script checks that DepGate answers and prints the address and the admin account.
 
 ::: tip Running a different version?
-`docker-compose.yml` takes the image from `.env`: `DEPGATE_IMAGE` (the image URL, `ghcr.io/secmods/depgate` by default) and `DEPGATE_VERSION` (the tag). To run another version or an image from your own registry, set them before the first run, `DEPGATE_VERSION=0.2.0 ./quickstart.sh`, or edit `.env` afterwards and run `./3-run.sh`.
+`docker-compose.yml` takes the image from `.env`: `DEPGATE_IMAGE` (the image URL, `ghcr.io/secmods/depgate` by default) and `DEPGATE_VERSION` (the tag). To run another version or an image from your own registry, set them before the first run, `DEPGATE_VERSION=1.0.1 ./quickstart.sh`, or edit `.env` afterwards and run `./3-run.sh`.
 :::
 
 ## Step 3: Sign in

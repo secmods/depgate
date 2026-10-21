@@ -8,7 +8,7 @@ info:
     Interactive docs are at /api/docs. This document is also at /api/swagger.yml
     and /api/swagger.json. Send a session token, API key, or CI token as
     Authorization: Bearer <token>."
-  version: 0.1.0
+  version: 1.0.0
 components:
   securitySchemes:
     bearerAuth:

@@ -78,7 +78,7 @@ The settings people usually change:
 
 | Setting | Example | Description |
 |---|---|---|
-| `DEPGATE_IMAGE`, `DEPGATE_VERSION` | `ghcr.io/secmods/depgate`, `0.1.0` | Image name and tag. The version is already filled in for the release the folder came from. |
+| `DEPGATE_IMAGE`, `DEPGATE_VERSION` | `ghcr.io/secmods/depgate`, `1.0.0` | Image name and tag. The version is already filled in for the release the folder came from. |
 | `GATEWAY_URL` | `https://depgate.example.com` | The address people and package clients use. Registry responses contain links built from it. |
 | `JWT_SECRET` | output of `openssl rand -hex 32` | Signs sessions and registry tokens. Keep it: a new value signs everyone out and invalidates every registry token. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `security-team@example.com` | The first Security account, created on first start only. Change the password in the web interface afterwards; both variables may then be removed. |

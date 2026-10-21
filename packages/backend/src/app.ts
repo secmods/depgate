@@ -7,6 +7,7 @@ import swaggerUi from '@fastify/swagger-ui';
 import healthPlugin from './plugins/health.js';
 import uiStatic from './plugins/ui-static.js';
 import { config } from './config.js';
+import { APP_VERSION } from './version.js';
 import { ECOSYSTEMS, rewritePackageUrl, type RepoTaggedRequest } from './services/repo-keys.js';
 import { isUnsafePathParam } from './services/upstream-path.js';
 import { runWithRequest } from './services/request-context.js';
@@ -144,7 +145,7 @@ export async function buildApp(opts?: BuildAppOptions): Promise<FastifyInstance>
           'DepGate — control what enters your software supply chain. ' +
           'Interactive docs are at /api/docs. This document is also at /api/swagger.yml and /api/swagger.json. ' +
           'Send a session token, API key, or CI token as Authorization: Bearer <token>.',
-        version: '0.1.0',
+        version: APP_VERSION,
       },
       servers: [{ url: '/' }],
       components: {

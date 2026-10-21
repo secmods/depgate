@@ -25,17 +25,17 @@ The repository is an npm workspace with two packages:
 The `Dockerfile` in the repository root builds the single production image: the web interface, the API and the registries.
 
 ```bash
-docker build -t depgate:0.1.0 .
+docker build -t depgate:1.0.0 .
 ```
 
 To push it to your registry:
 
 ```bash
-docker tag depgate:0.1.0 registry.example.com/depgate:0.1.0
-docker push registry.example.com/depgate:0.1.0
+docker tag depgate:1.0.0 registry.example.com/depgate:1.0.0
+docker push registry.example.com/depgate:1.0.0
 ```
 
-Then follow [Install with Docker](./docker), setting `DEPGATE_IMAGE` and `DEPGATE_VERSION` in the setup's `.env` to the image you built (`DEPGATE_IMAGE=depgate`, `DEPGATE_VERSION=0.1.0` for the example above). The deploy scripts never build: they pull the image, or use the one already loaded on the host.
+Then follow [Install with Docker](./docker), setting `DEPGATE_IMAGE` and `DEPGATE_VERSION` in the setup's `.env` to the image you built (`DEPGATE_IMAGE=depgate`, `DEPGATE_VERSION=1.0.0` for the example above). The deploy scripts never build: they pull the image, or use the one already loaded on the host.
 
 Releases are built by the repository's release workflow and published as `ghcr.io/secmods/depgate:<version>`; `RELEASING.md` in the repository describes it.
 

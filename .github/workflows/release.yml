@@ -105,7 +105,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN || github.token }}
 
       - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Build and push the image (amd64, arm64)
         uses: docker/build-push-action@v6

@@ -179,6 +179,7 @@ DepGate is MIT licensed and built in the open. Bug reports, feature requests and
 - Browse the [open issues](https://github.com/secmods/depgate/issues) or start a discussion before a larger change.
 
 If DepGate is useful to you, a ⭐ on GitHub helps other teams find it.
+## New Section
 
 ## License
 

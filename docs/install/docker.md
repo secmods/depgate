@@ -32,21 +32,14 @@ The scripts use `deploy/common/`, so copy the whole `deploy/` folder, not one su
 
 ## Step 1: Get the deploy folder and the image
 
-Every release on GitHub has `deploy-<version>.tar.gz`, the `deploy/` folder for that version. Unpack it on the host:
+The `deploy/` folder of the repository holds the compose files and scripts. Clone the repository on the host, or copy that folder to it:
 
 ```bash
-tar -xzf deploy-0.1.0.tar.gz
-cd deploy
+git clone https://github.com/secmods/depgate.git
+cd depgate/deploy
 ```
 
-The image `ghcr.io/secmods/depgate:<version>` is pulled when DepGate first starts; no sign-in is needed. On a host without registry access, download `depgate-<version>.tar` from the same release, check it and load it:
-
-```bash
-sha256sum -c depgate-0.1.0.tar.sha256
-docker load -i depgate-0.1.0.tar
-```
-
-With an internal registry mirror, set `DEPGATE_IMAGE` in `.env` to the mirror's name (and `docker login` once if it needs sign-in). To build the image yourself, see [Build from source](./build-from-source#build-the-production-image).
+The image `ghcr.io/secmods/depgate:<version>` is pulled when DepGate first starts; no sign-in is needed. With an internal registry mirror, set `DEPGATE_IMAGE` in `.env` to the mirror's name (and `docker login` once if it needs sign-in). To build the image yourself, see [Build from source](./build-from-source#build-the-production-image).
 
 ## Step 2: Choose a setup and configure
 

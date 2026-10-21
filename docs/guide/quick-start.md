@@ -14,11 +14,11 @@ You need:
 
 ## Step 1: Get DepGate
 
-Download `deploy-<version>.tar.gz` from the [latest release](https://github.com/secmods/depgate/releases) and change to the all-in-one folder:
+Clone the repository and change to the all-in-one folder:
 
 ```bash
-tar -xzf deploy-0.1.0.tar.gz
-cd deploy/all-in-one
+git clone https://github.com/secmods/depgate.git
+cd depgate/deploy/all-in-one
 ```
 
 ## Step 2: Start everything
@@ -31,8 +31,8 @@ The quick-start script writes a configuration file with generated secrets, creat
 
 The first run pulls the images. When it finishes, the script checks that DepGate answers and prints the address and the admin account.
 
-::: tip No access to the registry?
-Download `depgate-<version>.tar` from the same release and load it first: `docker load -i depgate-<version>.tar`. The script then uses the loaded image.
+::: tip Running a different version?
+`docker-compose.yml` takes the image from `.env`: `DEPGATE_IMAGE` (the image URL, `ghcr.io/secmods/depgate` by default) and `DEPGATE_VERSION` (the tag). To run another version or an image from your own registry, set them before the first run, `DEPGATE_VERSION=0.2.0 ./quickstart.sh`, or edit `.env` afterwards and run `./3-run.sh`.
 :::
 
 ## Step 3: Sign in

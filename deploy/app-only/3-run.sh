@@ -5,7 +5,7 @@
 #   ./3-run.sh --stop     stop everything (data is kept)
 #   ./3-run.sh --logs     follow the app's logs
 #
-# Nothing here builds. Without registry access, load the image first: docker load -i depgate-<version>.tar
+# Nothing here builds. Without registry access, point DEPGATE_IMAGE in .env at an internal mirror.
 set -euo pipefail
 source "$(dirname "$0")/../common/lib.sh"
 need docker; need curl

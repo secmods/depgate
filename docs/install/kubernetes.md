@@ -1,6 +1,6 @@
 # Install on Kubernetes
 
-DepGate runs on Kubernetes as a Deployment with several replicas behind your Ingress, which terminates TLS. PostgreSQL and Redis run outside the cluster or in it; the manifests never manage them. The manifests are in `deploy/kubernetes/` of the release's `deploy-<version>.tar.gz` and are applied with Kustomize (`kubectl apply -k`).
+DepGate runs on Kubernetes as a Deployment with several replicas behind your Ingress, which terminates TLS. PostgreSQL and Redis run outside the cluster or in it; the manifests never manage them. The manifests are in `deploy/kubernetes/` of the repository and are applied with Kustomize (`kubectl apply -k`).
 
 Before you start, check the [Requirements](./requirements). In addition:
 

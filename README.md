@@ -14,10 +14,10 @@
 <p align="center">
   <a href="https://github.com/secmods/depgate/actions/workflows/ci.yml"><img src="https://github.com/secmods/depgate/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://github.com/secmods/depgate/stargazers"><img src="https://img.shields.io/github/stars/depgate/depgate?style=flat&logo=github" alt="GitHub stars"></a>
-  <a href="https://github.com/secmods/depgate/issues"><img src="https://img.shields.io/github/issues/depgate/depgate" alt="Open issues"></a>
-  <a href="https://github.com/secmods/depgate/pulls"><img src="https://img.shields.io/github/issues-pr/depgate/depgate" alt="Open pull requests"></a>
-  <a href="https://github.com/secmods/depgate/commits/main"><img src="https://img.shields.io/github/last-commit/depgate/depgate" alt="Last commit"></a>
+  <a href="https://github.com/secmods/depgate/stargazers"><img src="https://img.shields.io/github/stars/secmods/depgate?style=flat&logo=github" alt="GitHub stars"></a>
+  <a href="https://github.com/secmods/depgate/issues"><img src="https://img.shields.io/github/issues/secmods/depgate" alt="Open issues"></a>
+  <a href="https://github.com/secmods/depgate/pulls"><img src="https://img.shields.io/github/issues-pr/secmods/depgate" alt="Open pull requests"></a>
+  <a href="https://github.com/secmods/depgate/commits/main"><img src="https://img.shields.io/github/last-commit/secmods/depgate" alt="Last commit"></a>
   <a href=".nvmrc"><img src="https://img.shields.io/badge/node-%E2%89%A524-339933?logo=node.js&logoColor=white" alt="Node 24+"></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"></a>
 </p>
@@ -67,6 +67,8 @@ DepGate moves the decision to the moment of download:
 
 <p align="center">
   <img src=".github/assets/demo.gif" alt="Two-minute DepGate walkthrough: a security engineer creates the policy &quot;Critical vulnerabilities&quot;, npm install minimist@1.2.5 is refused with a 403 naming the policy and CVE-2021-44906, the block appears in the Decision Ledger, Package check shows 1.2.5 blocked and recommends the newest allowed version, and a waiver is requested and approved" width="880">
+
+  [![Watch the video](docs/public/screenshots/login.png)](https://github.com/user-attachments/assets/43debc5c-6cf1-4654-b9ca-83b3858be98d)
 </p>
 
 Two minutes, in five steps: a security engineer creates a policy, a developer's `npm install` is refused with the reason, the decision appears in the Decision Ledger, Package check points at the newest allowed version, and a waiver is requested and approved.
@@ -107,15 +109,15 @@ Two minutes, in five steps: a security engineer creates a policy, a developer's 
 
 ## Quick start
 
-Run DepGate on one machine, connect npm, and block your first package. You need Docker Engine with Compose v2. Download `deploy-<version>.tar.gz` from the latest release, then:
+Run DepGate on one machine, connect npm, and block your first package. You need Docker Engine with Compose v2. Clone the repository, then:
 
 ```bash
-tar -xzf deploy-0.1.0.tar.gz
-cd deploy/all-in-one
+git clone https://github.com/secmods/depgate.git
+cd depgate/deploy/all-in-one
 ./quickstart.sh
 ```
 
-This starts PostgreSQL, Redis and DepGate from their published images; nothing is built. Working from a clone instead: `cd deploy/all-in-one && ./quickstart.sh` after `docker build -t ghcr.io/secmods/depgate:$(node -p "require('./package.json').version") .` in the repository root.
+This starts PostgreSQL, Redis and DepGate from their published images; nothing is built. To run an image you built yourself, run `docker build -t ghcr.io/secmods/depgate:$(node -p "require('./package.json').version") .` in the repository root first; the script then uses that image.
 
 Open `https://localhost`, sign in as the admin account the script printed, and copy the `.npmrc` snippet from **Registry** into an empty folder. Then try an install that the starter policies refuse:
 

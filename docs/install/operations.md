@@ -80,7 +80,7 @@ DepGate upgrades its own database schema. Every release ships the whole chain of
 
 3. **Back up the database** (see [Back up](#back-up)).
 4. Set the new version and start it. The log shows the schema it found and the migrations it applies, then `Database schema at NNNN`.
-   - Compose: set `DEPGATE_VERSION` in `.env` (if you unpacked the new release's `deploy/` folder over the old one, `3-run.sh` warns when `.env` still names the old version), then `./3-run.sh`. It pulls the new image, or finds the one you loaded with `docker load`.
+   - Compose: set `DEPGATE_VERSION` in `.env` (after updating the `deploy/` folder, `3-run.sh` warns when `.env` still names the old version), then `./3-run.sh`. It pulls the new image.
    - Kubernetes: set `newTag` in `kustomization.yaml`, then `kubectl apply -k deploy/kubernetes`.
 
 5. Check that the app is healthy (`docker compose ps` shows `(healthy)`; `kubectl -n depgate rollout status deployment/depgate`) and sign in.

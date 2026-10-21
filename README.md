@@ -180,6 +180,7 @@ DepGate is MIT licensed and built in the open. Bug reports, feature requests and
 
 If DepGate is useful to you, a ⭐ on GitHub helps other teams find it.
 ## New Section
+XYZ
 
 ## License
 

@@ -1,0 +1,12 @@
+[package]
+name = "depgate-cargo-test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = "=1.0.203"
+serde_json = "=1.0.117"
+anyhow = "=1.0.86"
+thiserror = "=1.0.61"
+once_cell = "=1.19.0"
+log = "=0.4.21"

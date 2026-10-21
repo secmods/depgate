@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: depgate
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: depgate
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    # Prometheus scrapes /metrics here from inside the cluster. Never put this port in the Ingress.
+    - name: management
+      port: 9464
+      targetPort: management

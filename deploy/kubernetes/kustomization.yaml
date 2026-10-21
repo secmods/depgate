@@ -1,0 +1,26 @@
+# DepGate on Kubernetes: kubectl apply -k .
+# Create the Secret (secret.example.yaml) and set the host in configmap.yaml and ingress.yaml first.
+# README.md in this folder has the steps.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: depgate
+
+resources:
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - pdb.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: depgate
+    includeSelectors: true
+
+images:
+  - name: ghcr.io/secmods/depgate
+    # The release this folder belongs to. Stamped by the release; change it to upgrade (README: Upgrade).
+    newTag: 0.1.0
+    # A registry mirror, when the cluster has no access to ghcr.io:
+    # newName: registry.example.com/depgate

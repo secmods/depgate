@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: depgate
+spec:
+  replicas: 2
+  # Version upgrades stop every pod before any new one starts: the new version upgrades the database schema
+  # at startup, and an old pod that keeps running could hold a table lock. Rolling upgrades are not supported.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: depgate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: depgate
+    spec:
+      # For a private registry mirror (newName in kustomization.yaml). The public image needs no secret;
+      # a missing secret of this name is ignored.
+      imagePullSecrets:
+        - name: depgate-registry
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # 10 s for the endpoints to drop this pod before SIGTERM, then up to 30 s for the app to finish
+      # requests in flight and close its connections.
+      terminationGracePeriodSeconds: 45
+      containers:
+        - name: depgate
+          # The tag comes from images: in kustomization.yaml.
+          image: ghcr.io/secmods/depgate
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: management
+              containerPort: 9464
+          env:
+            # Fixed for this setup. Everything else: the ConfigMap and the Secret below.
+            - name: NODE_ENV
+              value: production
+            # TLS ends at the Ingress; the pod serves plain HTTP.
+            - name: DISABLE_SSL
+              value: "true"
+            - name: PORT
+              value: "8080"
+            # /healthz, /readyz and /metrics for the probes and Prometheus; never in the Ingress.
+            - name: MANAGEMENT_PORT
+              value: "9464"
+            # Package files from public registries, on this pod's own emptyDir.
+            - name: ARTIFACT_CACHE_ENABLED
+              value: "true"
+            - name: ARTIFACT_CACHE_DIR
+              value: /var/lib/depgate/artifacts
+            # Your CA for outgoing TLS (depgate-ca ConfigMap). Without it Node logs one warning and continues.
+            - name: NODE_EXTRA_CA_CERTS
+              value: /certs/ca.crt
+          envFrom:
+            - configMapRef:
+                name: depgate-config
+            - secretRef:
+                name: depgate-secrets
+          # The database upgrade and the wait for another pod's startup happen before the app listens, and
+          # the management port opens only then. 60 x 10 s = 10 minutes; raise failureThreshold when release
+          # notes announce a long migration. Liveness is not checked until this passes.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: management
+            periodSeconds: 10
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: management
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: management
+            periodSeconds: 10
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              # Keeps serving while the Ingress and the Service drop this pod from their endpoints (Kubernetes 1.30+).
+              sleep:
+                seconds: 10
+          # Team size from the Sizing table (docs: Requirements). Raise for larger installations.
+          resources:
+            requests:
+              cpu: "1"
+              memory: 3Gi
+            limits:
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: artifact-cache
+              mountPath: /var/lib/depgate/artifacts
+            - name: ca
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        # One per pod, never shared. Lost when the pod is deleted, so every upgrade starts with an empty
+        # cache. ARTIFACT_CACHE_MAX_SIZE_GB (ConfigMap) must stay below this limit, or the pod is evicted;
+        # the nodes need this much ephemeral disk per pod.
+        - name: artifact-cache
+          emptyDir:
+            sizeLimit: 20Gi
+        # Company CA for outgoing TLS: internal registries, Postgres or Redis over TLS, a TLS-inspecting proxy.
+        # kubectl -n depgate create configmap depgate-ca --from-file=ca.crt=company-ca.pem
+        - name: ca
+          configMap:
+            name: depgate-ca
+            optional: true

@@ -1,0 +1,26 @@
+# Controller-neutral: no controller annotations. Every controller must be given these limits, in its own way
+# (README.md: Ingress controller limits): request body size 1 GiB, read and send timeouts 600 s, request
+# buffering off. Set ingressClassName to the class your cluster uses.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: depgate
+spec:
+  ingressClassName: CHANGE-ME
+  tls:
+    # kubernetes.io/tls Secret with the certificate for the host: created by hand, or by cert-manager.
+    - hosts:
+        - depgate.example.com
+      secretName: depgate-tls
+  rules:
+    # The same host as GATEWAY_URL in configmap.yaml.
+    - host: depgate.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: depgate
+                port:
+                  name: http

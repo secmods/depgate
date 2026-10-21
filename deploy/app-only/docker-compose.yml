@@ -1,0 +1,70 @@
+# DepGate app-only: the application from its published image, against your own Postgres and Redis
+# (another machine, or a managed service). Never builds.
+#
+#   ./quickstart.sh          or: ./1-configure.sh, ./2-generate-cert.sh, ./3-run.sh
+#   docker compose up -d     after .env and certs/ exist
+#
+# HTTPS on 443 with certs/tls.crt and tls.key, and 80 redirecting to it. DISABLE_SSL=true in .env serves
+# plain HTTP on 80 only, for TLS on your own proxy. Set DB_* and REDIS_URL in .env. See README.md here.
+
+# Not "depgate": the development stack in the repository root uses that name and its volumes.
+name: depgate-prod
+
+services:
+  app:
+    image: ${DEPGATE_IMAGE:-ghcr.io/secmods/depgate}:${DEPGATE_VERSION:?Set DEPGATE_VERSION in .env}
+    restart: unless-stopped
+    # Every tuning variable in .env (SMTP, TTLs, proxy, CA bundle...) reaches the app.
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      # HTTPS on 8443 and a redirect on 8080. DISABLE_SSL=true: the whole app over plain HTTP on 8080,
+      # nothing on 8443, no certificate needed.
+      DISABLE_SSL: ${DISABLE_SSL:-false}
+      PORT: "8080"
+      TLS_PORT: "8443"
+      TLS_CERT_FILE: ${TLS_CERT_FILE:-/certs/tls.crt}
+      TLS_KEY_FILE: ${TLS_KEY_FILE:-/certs/tls.key}
+      # Unset: false with HTTPS here (clients connect directly), 1 with DISABLE_SSL (your proxy in front).
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      # Metrics and health on a port that is never published.
+      MANAGEMENT_PORT: "9464"
+      # Required: refuse to start with the development defaults.
+      GATEWAY_URL: ${GATEWAY_URL:?Set GATEWAY_URL in .env, for example https://depgate.example.com}
+      UI_URL: ${UI_URL:-${GATEWAY_URL}}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (openssl rand -hex 32)}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      # Trust your CA for outgoing TLS too: internal registries, Postgres and Redis over TLS, a TLS-inspecting proxy.
+      NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS:-/certs/ca.crt}
+      # Package files from public registries, kept in the artifact-cache volume. Always on here;
+      # Settings > Artifact cache can switch it off at run time.
+      ARTIFACT_CACHE_ENABLED: "true"
+      ARTIFACT_CACHE_DIR: /var/lib/depgate/artifacts
+      ARTIFACT_CACHE_MAX_SIZE_GB: ${ARTIFACT_CACHE_MAX_SIZE_GB:-50}
+    ports:
+      # With DISABLE_SSL=true nothing answers here. If your proxy on this host needs 443,
+      # move it out of the way: HTTPS_PORT=127.0.0.1:8443
+      - "${HTTPS_PORT:-443}:8443"
+      # HTTP_BIND=127.0.0.1 when your proxy runs on this host, so nothing bypasses it.
+      - "${HTTP_BIND:-0.0.0.0}:${HTTP_PORT:-80}:8080"
+    # Lets the app reach servers on the Docker host (Linux needs this; Docker Desktop has it built in).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # tls.crt (full chain) and tls.key for HTTPS, and ca.crt (your CA certificate, public).
+      - ./certs:/certs:ro
+      # One per app container. Never shared with another DepGate container.
+      - artifact-cache:/var/lib/depgate/artifacts
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9464/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      # A database upgrade, or a wait for another instance's startup, happens before the app listens.
+      # Docker never restarts an unhealthy container; ./3-run.sh waits the same 10 minutes and reports.
+      start_period: 600s
+    # Time to finish requests in flight before docker stop kills it.
+    stop_grace_period: 30s
+
+volumes:
+  artifact-cache:

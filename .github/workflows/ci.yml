@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Deploy files name the package version
+        run: bash scripts/set-deploy-version.sh --check
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit tests (backend)
+        run: npm run test --workspace=@depgate/backend
+
+      - name: Unit tests (UI)
+        run: npm run test --workspace=ui
+
+  integration:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: lint-build-test
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: depgate
+          POSTGRES_PASSWORD: depgate
+          POSTGRES_DB: depgate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U depgate"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Integration tests (backend)
+        env:
+          RUN_INTEGRATION: '1'
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: depgate
+          DB_PASSWORD: depgate
+          DB_NAME: depgate
+          DB_SSL: 'false'
+          REDIS_URL: redis://localhost:6379
+        run: npm run test:integration --workspace=@depgate/backend
+
+  e2e:
+    # Push to main only, like integration: this job builds the DepGate image and drives the full browser
+    # suite against the compose stack (postgres, redis, backend, keycloak), about ten minutes, which would
+    # double the wait on every pull request. Pull requests keep lint, build and the unit tests.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: lint-build-test
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The script `npm run test:e2e` uses locally: builds the image, starts the compose stack with the sso
+      # profile and waits until DepGate (3050) and Keycloak (8180) answer. The browser reaches Keycloak as
+      # keycloak.localhost:8180, which Chromium resolves to 127.0.0.1 on its own (verified with Playwright's
+      # Linux Chromium, where glibc and Node do not resolve *.localhost); the test runner itself uses
+      # localhost:8180, so the runner needs no /etc/hosts entry.
+      - name: Build the image and start the stack
+        run: node e2e/stack.mjs
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npx playwright test
+
+      - name: Stack logs
+        if: failure()
+        run: docker compose --profile sso logs --no-color --tail=300
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-e2e
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore

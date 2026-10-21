@@ -1,0 +1,94 @@
+# Throwaway DepGate for documentation screenshots. Never used for an installation.
+# A clean database, so screenshots show only the demo data that seed.mjs creates.
+#
+#   docker compose -f docs/scripts/docker-compose.yml up -d     DepGate at http://localhost:3060
+#   docker compose -f docs/scripts/docker-compose.yml down -v   remove it and its data
+#
+# For the demo recording (demo-video.mjs) start it with GATEWAY_URL=http://localhost:3060, so that the
+# download links it hands to npm point back at this instance instead of the documentation's example host.
+#
+# Keycloak (the realm from e2e/keycloak) plays the company identity provider for the single sign-on
+# screenshots. The app reaches it as keycloak.localhost on the compose network; the browser on the host
+# reaches the same name on 127.0.0.1:8180, so the issuer is the same for both.
+name: depgate-docs
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: depgate
+      POSTGRES_PASSWORD: depgate
+      POSTGRES_DB: depgate
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U depgate"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory-policy", "noeviction"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  # Answers every webhook delivery and log-streaming batch with 200, so both pages show healthy deliveries.
+  siem:
+    image: node:24-alpine
+    command: ["node", "-e", "require('http').createServer((q,s)=>{q.resume();q.on('end',()=>s.end('ok'))}).listen(80)"]
+    networks:
+      default:
+        aliases: [siem.acme.internal]
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.0
+    command: ["start-dev", "--import-realm", "--http-port=8180", "--hostname=http://keycloak.localhost:8180"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "127.0.0.1:8180:8180"
+    volumes:
+      - ../../e2e/keycloak:/opt/keycloak/data/import:ro
+    networks:
+      default:
+        aliases: [keycloak.localhost]
+
+  app:
+    image: ${DEPGATE_IMAGE:-depgate-backend:latest}
+    ports:
+      - "127.0.0.1:3060:3060"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "npm.acme.internal:host-gateway"
+    environment:
+      PORT: 3060
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      GATEWAY_URL: ${GATEWAY_URL:-https://depgate.example.com}
+      UI_URL: http://localhost:3060
+      JWT_SECRET: docs-screenshots-only
+      ADMIN_EMAIL: security@example.com
+      ADMIN_PASSWORD: docs-demo-admin
+      SMTP_HOST: ${SMTP_HOST:-host.docker.internal}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_FROM: DepGate <no-reply@example.com>
+      DB_HOST: postgres
+      DB_USER: depgate
+      DB_PASSWORD: depgate
+      DB_NAME: depgate
+      REDIS_URL: redis://redis:6379
+      # The artifact cache, as in the production setups, so Settings → Artifact cache has something to show.
+      ARTIFACT_CACHE_ENABLED: "true"
+      ARTIFACT_CACHE_DIR: /var/lib/depgate/artifacts
+      ARTIFACT_CACHE_MAX_SIZE_GB: "5"
+      DEPGATE_INSTANCE_NAME: depgate-1
+    volumes:
+      - artifact-cache:/var/lib/depgate/artifacts
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+volumes:
+  artifact-cache:

@@ -1,0 +1,176 @@
+# Publishes ghcr.io/secmods/depgate:<x.y.z> (linux/amd64 and linux/arm64, no `latest`) and a GitHub
+# release with the image file, its checksum, and the deploy/ folder. Two ways to start it:
+#
+#   Actions → Release → Run workflow, choose patch, minor, or major.
+#   The job bumps the version, commits package.json and the deploy files to main, and tags that commit.
+#
+#   On main: npm version <x.y.z> && git push --follow-tags
+#   RELEASING.md describes that path.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  packages: write
+  actions: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/secmods/depgate
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          # A UI run always releases the tip of main, whichever branch was selected in the form.
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      # npm version commits the root package.json, then the version script stamps the workspace
+      # package.json files and the deploy files and stages them. Pushing with the workflow token
+      # does not start this workflow again, so the publish steps below run in this same job.
+      - name: Bump the version on main
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          case "$BUMP" in
+            patch|minor|major) ;;
+            *) echo "Choose patch, minor, or major." >&2; exit 1 ;;
+          esac
+          git checkout -B main origin/main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          npm version "$BUMP" -m "Release %s"
+          git push origin HEAD:main --follow-tags
+
+      - name: The tag is on main
+        if: github.event_name == 'push'
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Refusing to release: $GITHUB_SHA is not on main. Tag a commit that has been merged to main." >&2
+            exit 1
+          fi
+
+      - name: The version to publish
+        id: version
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            tag="${GITHUB_REF_NAME#v}"
+            if [ "$tag" != "$version" ]; then
+              echo "Tag v$tag does not match package.json version $version. Run npm version $tag and tag that commit." >&2
+              exit 1
+            fi
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy files name the same version
+        run: bash scripts/set-deploy-version.sh --check
+
+      # GHCR_TOKEN: a token with packages:write on the organization that owns the image, needed when this
+      # repository is not in that organization. Otherwise the workflow's own token is enough.
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN || github.token }}
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push the image (amd64, arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=DepGate
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.revision=${{ steps.version.outputs.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # The amd64 image again, into the local Docker engine (from the cache), for hosts without registry access.
+      - name: Load the amd64 image for the release file
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=DepGate
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.revision=${{ steps.version.outputs.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha
+
+      - name: Release files
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p release
+          docker save "$IMAGE:$VERSION" -o "release/depgate-$VERSION.tar"
+          (cd release && sha256sum "depgate-$VERSION.tar" > "depgate-$VERSION.tar.sha256")
+          tar -czf "release/deploy-$VERSION.tar.gz" --exclude='.env' --exclude='.env.bak' --exclude='certs/*' --exclude='local-ca' deploy
+          ls -l release
+
+      - name: Create the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          target_commitish: ${{ steps.version.outputs.sha }}
+          name: DepGate ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          body: |
+            Image: `${{ env.IMAGE }}:${{ steps.version.outputs.version }}` (linux/amd64, linux/arm64).
+            Files: `depgate-${{ steps.version.outputs.version }}.tar` for hosts without registry access (`docker load -i`), its `.sha256`, and `deploy-${{ steps.version.outputs.version }}.tar.gz` with the deploy folder.
+
+            **Database upgrade:** _fill in: none, or the migrations this release applies and how long they take on a large database (raise the Kubernetes startup probe if needed)._
+
+            **Settings:** _fill in: new or renamed variables, or none._
+          files: |
+            release/depgate-${{ steps.version.outputs.version }}.tar
+            release/depgate-${{ steps.version.outputs.version }}.tar.sha256
+            release/deploy-${{ steps.version.outputs.version }}.tar.gz
+
+      # A tag pushed by a person starts docs.yml on its own. A tag pushed by this job does not, so
+      # start that workflow here. workflow_dispatch is one of the events the workflow token may start.
+      - name: Publish the documentation
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh workflow run docs.yml --ref "v${VERSION}"

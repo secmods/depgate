@@ -1,0 +1,13 @@
+name: DepGate CodeQL config
+
+# Harness, tests, docs, deploy files, and local scripts are not the product.
+paths-ignore:
+  - test_apps
+  - e2e
+  - perf
+  - docs
+  - deploy
+  - scripts
+  - packages/**/test-support
+  - '**/*.test.ts'
+  - '**/*.spec.ts'

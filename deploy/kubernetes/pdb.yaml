@@ -1,0 +1,11 @@
+# A node drain never takes every replica at once. Upgrades are not affected: Recreate stops the pods
+# through the Deployment, not through evictions.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: depgate
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: depgate

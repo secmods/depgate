@@ -1,0 +1,98 @@
+@if (showShell) {
+
+  @if (sidebarOpen) {
+    <div class="fixed inset-0 z-30 bg-black/50 lg:hidden" (click)="closeSidebar()" aria-hidden="true"></div>
+  }
+
+  <!-- Sidebar -->
+  <aside
+    id="app-sidebar"
+    class="h-screen fixed left-0 top-0 z-40 flex flex-col app-sidebar"
+    [class.sidebar-open]="sidebarOpen"
+    [class.is-rail]="rail">
+
+    <button
+      type="button"
+      class="app-sidebar-toggle hidden lg:grid"
+      [class.is-collapsed]="rail"
+      (click)="toggleCollapsed(); toggleTip.close()"
+      aria-controls="app-sidebar"
+      [attr.aria-expanded]="!rail"
+      [attr.aria-label]="rail ? 'Expand sidebar' : 'Collapse sidebar'"
+      [ngbTooltip]="rail ? 'Expand sidebar' : 'Collapse sidebar'"
+      #toggleTip="ngbTooltip"
+      placement="end"
+      container="body"
+      data-testid="sidebar-toggle">
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+    </button>
+
+    <div class="app-sidebar-head h-16 flex items-center justify-between flex-shrink-0" style="border-bottom: 1px solid var(--dg-sidebar-divider)">
+      <div class="app-logo">
+        <img src="depgate-logo.png" alt="DepGate" class="h-9 w-auto" />
+      </div>
+      <button type="button" class="dg-icon-btn lg:hidden!" style="color: var(--dg-sidebar-text)" (click)="closeSidebar()" aria-label="Close navigation">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <app-sidebar [collapsed]="rail" (navClick)="closeSidebar()" class="flex-1 overflow-y-auto overflow-x-hidden pb-4" />
+
+    <div class="app-sidebar-foot flex-shrink-0" style="border-top: 1px solid var(--dg-sidebar-divider)">
+      <div class="dg-account">
+        <div class="dg-avatar" aria-hidden="true" [ngbTooltip]="accountName" [disableTooltip]="!rail" placement="end" container="body">{{ accountInitial }}</div>
+        <div class="dg-account-text flex-1 min-w-0">
+          <div class="text-[13px] font-semibold truncate" style="color: #e2e8f0">{{ accountName }}</div>
+          @if (accountDetail) {
+            <div class="text-[11px] truncate" style="color: #94a3b8">{{ accountDetail }}</div>
+          }
+        </div>
+        <button type="button" class="dg-icon-btn" style="color: #94a3b8" (click)="logout()" ngbTooltip="Sign out" placement="end" container="body" aria-label="Sign out">
+          <span class="material-symbols-outlined">logout</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="app-main min-h-screen flex flex-col" [class.is-rail]="rail">
+    <header class="app-header sticky top-0 z-30 h-16 px-4 lg:px-8 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2 min-w-0">
+        <button type="button" class="dg-icon-btn lg:hidden! -ml-1" (click)="toggleSidebar()" aria-label="Open navigation">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        @if (breadcrumb) {
+          <nav class="dg-breadcrumb" aria-label="Breadcrumb">
+            <span class="hidden sm:inline">{{ breadcrumb.group }}</span>
+            <span class="material-symbols-outlined hidden sm:inline" aria-hidden="true">chevron_right</span>
+            @if (crumbs.detail(); as detail) {
+              <a class="dg-breadcrumb-link" [routerLink]="breadcrumb.route">{{ breadcrumb.page }}</a>
+              <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+              <span class="dg-breadcrumb-current" aria-current="page">{{ detail }}</span>
+            } @else {
+              <span class="dg-breadcrumb-current" aria-current="page">{{ breadcrumb.page }}</span>
+            }
+          </nav>
+        }
+      </div>
+
+      <button
+        type="button"
+        class="dg-icon-btn"
+        (click)="toggleTheme()"
+        [title]="isDark ? 'Switch to light theme' : 'Switch to dark theme'"
+        [attr.aria-label]="isDark ? 'Switch to light theme' : 'Switch to dark theme'">
+        <span class="material-symbols-outlined">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
+      </button>
+    </header>
+
+    <main class="flex-1 p-4 sm:p-6 lg:p-8">
+      <router-outlet />
+    </main>
+  </div>
+
+} @else {
+  <router-outlet />
+}
+
+<app-toast-container />

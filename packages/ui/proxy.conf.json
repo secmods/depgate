@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "http://localhost:3050",
+    "secure": false,
+    "proxyTimeout": 300000,
+    "timeout": 300000
+  }
+}

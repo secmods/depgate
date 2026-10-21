@@ -1,0 +1,34 @@
+{
+  "name": "depgate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DepGate — Control what enters your software supply chain. Proxy, cache, and policy engine for npm, PyPI, Go, and Maven",
+  "workspaces": [
+    "packages/backend",
+    "packages/ui"
+  ],
+  "scripts": {
+    "dev": "docker compose up",
+    "dev:backend": "npm run dev --workspace=packages/backend",
+    "dev:ui": "npm run start --workspace=packages/ui",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "test:unit": "npm run test:unit --workspace=@depgate/backend",
+    "test:integration": "npm run test:integration --workspace=@depgate/backend",
+    "test:e2e": "playwright test",
+    "test:load": "bash perf/run.sh",
+    "test:e2e:ui": "playwright test --ui",
+    "lint": "npm run lint --workspace=@depgate/backend && npm run lint --workspace=packages/ui",
+    "version": "bash scripts/set-deploy-version.sh && npm install --package-lock-only --ignore-scripts --no-audit --no-fund && git add deploy packages/backend/package.json packages/ui/package.json package-lock.json",
+    "version:check": "bash scripts/set-deploy-version.sh --check"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
+  },
+  "overrides": {
+    "vite": "8.3.4"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

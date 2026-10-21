@@ -1,0 +1,131 @@
+{
+  "realm": "depgate",
+  "displayName": "DepGate test identity provider",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "accessTokenLifespan": 300,
+  "clients": [
+    {
+      "clientId": "depgate",
+      "name": "DepGate",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "depgate-dev-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:3050/*",
+        "http://127.0.0.1:3050/*",
+        "http://localhost:4300/*",
+        "http://localhost:3060/*"
+      ],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "alice",
+      "email": "alice@acme.test",
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Admin",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "bob",
+      "email": "bob@acme.test",
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Builder",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "carol",
+      "email": "carol@acme.test",
+      "emailVerified": true,
+      "firstName": "Carol",
+      "lastName": "Newhire",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "dave",
+      "email": "dave@acme.test",
+      "emailVerified": false,
+      "firstName": "Dave",
+      "lastName": "Unverified",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "eve",
+      "email": "eve@gmail.com",
+      "emailVerified": true,
+      "firstName": "Eve",
+      "lastName": "Outsider",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "qa-e2e-sso-sec",
+      "email": "qa-e2e-sso-sec@acme.test",
+      "emailVerified": true,
+      "firstName": "QA",
+      "lastName": "Security",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "qa-e2e-sso-new",
+      "email": "qa-e2e-sso-new@acme.test",
+      "emailVerified": true,
+      "firstName": "QA",
+      "lastName": "Unlisted",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "qa-e2e-sso-unverified",
+      "email": "qa-e2e-sso-unverified@acme.test",
+      "emailVerified": false,
+      "firstName": "QA",
+      "lastName": "Unverified",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "qa-e2e-sso-gmail",
+      "email": "qa-e2e-sso-gmail@gmail.com",
+      "emailVerified": true,
+      "firstName": "QA",
+      "lastName": "Gmail",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "qa-e2e-sso-load",
+      "email": "qa-e2e-sso-load@acme.test",
+      "emailVerified": true,
+      "firstName": "QA",
+      "lastName": "Load",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    }
+  ]
+}

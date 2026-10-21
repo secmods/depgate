@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker>
+    <marker id="arrow-brand" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6366f1"/></marker>
+    <marker id="arrow-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#16a34a"/></marker>
+    <marker id="arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/></filter>
+    <style>
+      .t { fill: #0f172a; }
+      .m { fill: #475569; }
+      .l { fill: #94a3b8; }
+      .h { font-size: 16px; font-weight: 700; }
+      .s { font-size: 14.5px; font-weight: 600; }
+      .b { font-size: 13.5px; }
+      .x { font-size: 12.5px; }
+      .e { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+      .mono { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 13px; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.2; }
+      .soft { fill: #f8fafc; stroke: #e2e8f0; stroke-width: 1.2; }
+      .ico { fill: none; stroke: #475569; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .ico-b { fill: none; stroke: #4f46e5; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .line { fill: none; stroke: #94a3b8; stroke-width: 1.6; }
+      .dash { stroke-dasharray: 5 4; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="640" rx="16" fill="#ffffff"/>
+
+  <!-- ── Package client ─────────────────────────────────────────── -->
+  <rect class="soft" x="24" y="96" width="190" height="404" rx="14"/>
+  <g class="ico" transform="translate(42 114) scale(1.0)"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></g>
+  <text class="t h" x="72" y="132">Package client</text>
+  <text class="m x" x="42" y="158">Developer laptop or CI job</text>
+  <rect x="42" y="174" width="158" height="34" rx="8" fill="#0f172a"/>
+  <text class="mono" x="54" y="196" font-size="12" fill="#e2e8f0">npm install lodash</text>
+  <text class="m x" x="42" y="236">npm · pip · Maven · Gradle</text>
+  <text class="m x" x="42" y="254">Go · NuGet · Cargo</text>
+  <text class="m x" x="42" y="272">Composer · Bundler</text>
+  <path d="M42 300H196" stroke="#e2e8f0"/>
+  <text class="e l" x="42" y="326">RESPONSES</text>
+  <text class="x" x="42" y="350" fill="#15803d" font-weight="600">200 · the package file</text>
+  <text class="x" x="42" y="372" fill="#b91c1c" font-weight="600">403 · policy and reason,</text>
+  <text class="x" x="42" y="390" fill="#b91c1c" font-weight="600">plus a Package check link</text>
+
+  <!-- request into DepGate -->
+  <path class="line" d="M214 160H250" stroke="#6366f1" marker-end="url(#arrow-brand)"/>
+  <text class="m x" x="232" y="150" text-anchor="middle">token</text>
+
+  <!-- ── DepGate panel ──────────────────────────────────────────── -->
+  <rect x="254" y="40" width="692" height="480" rx="16" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+  <g class="ico-b" transform="translate(274 54) scale(1.15)"><path d="M12 3l7.5 3v5.5c0 4.6-3.1 8.4-7.5 10-4.4-1.6-7.5-5.4-7.5-10V6z"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/></g>
+  <text x="308" y="76" font-size="20" font-weight="800" fill="#4338ca">DepGate</text>
+  <text class="m x" x="926" y="74" text-anchor="end">for every request, in this order</text>
+
+  <!-- Stages 1–4 -->
+  <g filter="url(#shadow)">
+    <rect class="card" x="274" y="96" width="148" height="128" rx="12"/>
+    <rect class="card" x="442" y="96" width="148" height="128" rx="12"/>
+    <rect class="card" x="610" y="96" width="148" height="128" rx="12"/>
+    <rect class="card" x="778" y="96" width="148" height="128" rx="12"/>
+  </g>
+  <!-- 1 -->
+  <circle cx="300" cy="122" r="13" fill="#6366f1"/><text x="300" y="127" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+  <g class="ico" transform="translate(386 111) scale(0.9)"><rect x="5" y="10.5" width="14" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></g>
+  <text class="t s" x="290" y="164">Authenticate</text>
+  <text class="m x" x="290" y="186">Token in the header</text>
+  <text class="m x" x="290" y="204">identifies the caller</text>
+  <!-- 2 -->
+  <circle cx="468" cy="122" r="13" fill="#6366f1"/><text x="468" y="127" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+  <g class="ico" transform="translate(554 111) scale(0.9)"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 12h4l6-6M11 12l6 6"/></g>
+  <text class="t s" x="458" y="164">Pick repository</text>
+  <text class="m x" x="458" y="186">From the URL path:</text>
+  <text class="mono" x="458" y="204" font-size="12" fill="#475569">/npm/default/</text>
+  <!-- 3 -->
+  <circle cx="636" cy="122" r="13" fill="#6366f1"/><text x="636" y="127" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+  <g class="ico" transform="translate(722 111) scale(0.9)"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/></g>
+  <text class="t s" x="626" y="164">Fetch metadata</text>
+  <text class="m x" x="626" y="186">From the registry,</text>
+  <text class="m x" x="626" y="204">cached in Redis</text>
+  <!-- 4 -->
+  <circle cx="804" cy="122" r="13" fill="#6366f1"/><text x="804" y="127" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+  <g class="ico" transform="translate(890 111) scale(0.9)"><path d="M12 2.5l8.5 4.7v9.6L12 21.5l-8.5-4.7V7.2z"/><path d="M3.5 7.2L12 12l8.5-4.8M12 12v9.5"/></g>
+  <text class="t s" x="794" y="164">Gather facts</text>
+  <text class="m x" x="794" y="186">License, release</text>
+  <text class="m x" x="794" y="204">date, CVEs, EPSS</text>
+  <!-- chevrons -->
+  <path class="line" d="M424 160H439" marker-end="url(#arrow)"/>
+  <path class="line" d="M592 160H607" marker-end="url(#arrow)"/>
+  <path class="line" d="M760 160H775" marker-end="url(#arrow)"/>
+  <path class="line" d="M852 224V238" marker-end="url(#arrow)"/>
+
+  <!-- Stage 5 -->
+  <rect class="card" x="274" y="242" width="652" height="170" rx="12" filter="url(#shadow)"/>
+  <circle cx="300" cy="268" r="13" fill="#6366f1"/><text x="300" y="273" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+  <text class="t s" x="322" y="273">Decide each version</text>
+  <text class="m x" x="906" y="273" text-anchor="end">The first check that decides wins</text>
+
+  <!-- decision ladder -->
+  <g>
+    <rect x="290" y="292" width="111" height="88" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text class="t b" x="302" y="314" font-weight="600">Namespace</text>
+    <text class="t b" x="302" y="331" font-weight="600">protection</text>
+    <rect x="302" y="348" width="54" height="22" rx="11" fill="#fee2e2" stroke="#fca5a5"/><text x="329" y="363" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">Block</text>
+
+    <rect x="417" y="292" width="111" height="88" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text class="t b" x="429" y="314" font-weight="600">Exceptions</text>
+    <text class="m x" x="429" y="331">time-bound</text>
+    <rect x="429" y="348" width="56" height="22" rx="11" fill="#dcfce7" stroke="#86efac"/><text x="457" y="363" font-size="11.5" font-weight="700" fill="#15803d" text-anchor="middle">Allow</text>
+
+    <rect x="544" y="292" width="111" height="88" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text class="t b" x="556" y="314" font-weight="600">Malware list</text>
+    <text class="m x" x="556" y="331">known malware</text>
+    <rect x="556" y="348" width="54" height="22" rx="11" fill="#fee2e2" stroke="#fca5a5"/><text x="583" y="363" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">Block</text>
+
+    <rect x="671" y="292" width="111" height="88" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text class="t b" x="683" y="314" font-weight="600">Policies</text>
+    <text class="m x" x="683" y="331">by priority</text>
+    <rect x="683" y="348" width="92" height="22" rx="11" fill="#eef2ff" stroke="#a5b4fc"/><text x="729" y="363" font-size="11.5" font-weight="700" fill="#4338ca" text-anchor="middle">Allow or Block</text>
+
+    <rect x="798" y="292" width="111" height="88" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text class="t b" x="810" y="314" font-weight="600">No match</text>
+    <text class="m x" x="810" y="331">nothing applies</text>
+    <rect x="810" y="348" width="56" height="22" rx="11" fill="#dcfce7" stroke="#86efac"/><text x="838" y="363" font-size="11.5" font-weight="700" fill="#15803d" text-anchor="middle">Allow</text>
+
+    <path class="line" d="M402 336H414" marker-end="url(#arrow)"/>
+    <path class="line" d="M529 336H541" marker-end="url(#arrow)"/>
+    <path class="line" d="M656 336H668" marker-end="url(#arrow)"/>
+    <path class="line" d="M783 336H795" marker-end="url(#arrow)"/>
+  </g>
+  <text class="m x" x="290" y="400">Policies in monitor mode never change the result; they record what they would have blocked.</text>
+
+  <!-- Outcomes -->
+  <rect x="274" y="428" width="652" height="36" rx="10" fill="#dcfce7" stroke="#86efac"/>
+  <g transform="translate(286 434) scale(1)" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7 5.3-5.6"/></g>
+  <text x="318" y="451" font-size="13.5" font-weight="700" fill="#15803d">Allowed</text>
+  <text x="384" y="451" font-size="13.5" fill="#166534">The file is streamed from the registry through DepGate, never stored.</text>
+  <rect x="274" y="472" width="652" height="36" rx="10" fill="#fee2e2" stroke="#fca5a5"/>
+  <g transform="translate(286 478) scale(1)" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></g>
+  <text x="318" y="495" font-size="13.5" font-weight="700" fill="#b91c1c">Blocked</text>
+  <text x="384" y="495" font-size="13.5" fill="#991b1b">HTTP 403 naming the policy and the reason. Nothing is downloaded.</text>
+
+  <!-- responses back to the client -->
+  <path d="M274 446H218" fill="none" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arrow-good)"/>
+  <path d="M274 490H218" fill="none" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arrow-bad)"/>
+
+  <!-- ── Upstream ───────────────────────────────────────────────── -->
+  <rect class="soft" x="986" y="96" width="190" height="128" rx="14"/>
+  <g class="ico" transform="translate(1004 112)"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></g>
+  <text class="t h" x="1034" y="130">Registries</text>
+  <text class="m x" x="1004" y="160">Public: npmjs, PyPI,</text>
+  <text class="m x" x="1004" y="178">Maven Central, …</text>
+  <text class="m x" x="1004" y="200">Internal: Artifactory,</text>
+  <text class="m x" x="1004" y="218" >Nexus, Verdaccio, …</text>
+
+  <rect class="soft" x="986" y="242" width="190" height="128" rx="14"/>
+  <g class="ico" transform="translate(1004 258)"><circle cx="5.5" cy="18.5" r="1.6"/><path d="M4 11.5a8.5 8.5 0 0 1 8.5 8.5M4 4.5A15.5 15.5 0 0 1 19.5 20"/></g>
+  <text class="t h" x="1034" y="276">Data sources</text>
+  <text class="m x" x="1004" y="306">OSV vulnerabilities</text>
+  <text class="m x" x="1004" y="324">EPSS scores (local copy)</text>
+  <text class="m x" x="1004" y="342">deps.dev · Scorecard</text>
+
+  <path class="line" d="M946 140H982" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+  <text class="m x" x="966" y="130" text-anchor="middle">fetch</text>
+  <path class="line" d="M946 300H982" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+  <text class="m x" x="966" y="290" text-anchor="middle">facts</text>
+
+  <!-- ── Records ────────────────────────────────────────────────── -->
+  <path class="line dash" d="M600 520V552" marker-end="url(#arrow)"/>
+  <rect class="soft" x="354" y="556" width="160" height="44" rx="10"/>
+  <g class="ico" transform="translate(368 566) scale(0.95)"><path d="M6 2.5h8.5l4 4v15H6z"/><path d="M14.5 2.5v4h4M9 11h6M9 14.5h6M9 18h4"/></g>
+  <text class="t b" x="396" y="583" font-weight="600">Decision Ledger</text>
+  <rect class="soft" x="524" y="556" width="152" height="44" rx="10"/>
+  <g class="ico" transform="translate(538 566) scale(0.95)"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.8 1.8H4.2z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></g>
+  <text class="t b" x="566" y="583" font-weight="600">Webhooks</text>
+  <rect class="soft" x="686" y="556" width="160" height="44" rx="10"/>
+  <g class="ico" transform="translate(700 566) scale(0.95)"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g>
+  <text class="t b" x="728" y="583" font-weight="600">Monitoring</text>
+  <path d="M434 552V546H766V552" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <text class="m x" x="600" y="622" text-anchor="middle">Every decision is recorded. Blocks can be sent to your SIEM or chat.</text>
+</svg>

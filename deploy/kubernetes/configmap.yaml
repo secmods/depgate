@@ -1,0 +1,53 @@
+# Settings DepGate reads from the environment. Same variable names as the compose setups' .env;
+# the Configuration reference in the documentation lists them all. Secrets go in the depgate-secrets Secret.
+#
+# After a change: kubectl rollout restart deployment/depgate (every pod stops, then the new ones start).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: depgate-config
+data:
+  # The address users and package clients use. Registry responses contain links built from it.
+  # The same host goes in ingress.yaml: nothing derives one from the other.
+  GATEWAY_URL: https://depgate.example.com
+  # First admin account, used only when DepGate first starts on an empty database (its password is in the Secret).
+  ADMIN_EMAIL: admin@example.com
+
+  # PostgreSQL 15 or later: an empty database and a user that owns it. Password: DB_PASSWORD in the Secret.
+  DB_HOST: postgres.example.com
+  DB_PORT: "5432"
+  DB_USER: depgate
+  DB_NAME: depgate
+  # Encrypt the connection; DB_SSL_CA_FILE also verifies the server with the CA in the depgate-ca ConfigMap.
+  DB_SSL: "false"
+  # DB_SSL_CA_FILE: /certs/ca.crt
+  # Connections per pod. Each pod also opens two more during startup.
+  # DB_POOL_SIZE: "20"
+
+  # Package files from public registries, on each pod's own emptyDir (deployment.yaml). Must stay below
+  # the emptyDir sizeLimit (20Gi there), or the kubelet evicts the pod. Every pod starts with an empty cache.
+  ARTIFACT_CACHE_MAX_SIZE_GB: "18"
+
+  # Proxies in front of the pods whose X-Forwarded-For is believed for client IPs: 1 for the Ingress
+  # controller alone (the default with DISABLE_SSL=true), 2 with a cloud HTTP load balancer in front of it.
+  # TRUST_PROXY: "1"
+
+  # Background jobs this pod runs: all (default), none, or a list such as webhooks,email.
+  # WORKERS: all
+  # LOG_LEVEL: info
+
+  # Outbound HTTP proxy for the public registries, OSV, deps.dev and the malicious-package feed.
+  # NODE_USE_ENV_PROXY: "1"
+  # HTTP_PROXY: http://proxy.example.com:3128
+  # HTTPS_PROXY: http://proxy.example.com:3128
+  # NO_PROXY: localhost,127.0.0.1,.svc,.cluster.local,.example.com
+
+  # Email (or set it in Settings > Email). SMTP_PASSWORD goes in the Secret.
+  # SMTP_HOST: smtp.example.com
+  # SMTP_PORT: "587"
+  # SMTP_SECURE: "false"
+  # SMTP_USER: depgate
+  # SMTP_FROM: DepGate <no-reply@example.com>
+
+  # Documentation site linked from the sidebar's Help section; unset hides the link.
+  DOCS_URL: https://github.com/secmods/depgate/

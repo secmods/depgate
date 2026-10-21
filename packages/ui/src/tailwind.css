@@ -1,0 +1,132 @@
+/* ══════════════════════════════════════════════
+   Tailwind CSS 4 entry (plain CSS: Tailwind 4 does not run through Sass).
+
+   angular.json loads Bootstrap, then this file, then styles.scss. Bootstrap is unlayered, so the
+   imports below deliberately leave out layer(): Tailwind's output stays unlayered too and the
+   cascade is the same as with Tailwind 3 — Bootstrap, then preflight, then utilities, then the
+   dg-* rules in styles.scss. Bootstrap's !important utilities (.rounded, .border, .mb-3…) still
+   win over Tailwind classes of the same name.
+
+   One difference from Tailwind 3: responsive variants (sm:, lg:…) are no longer appended at the
+   very end of the bundle, so a styles.scss rule that sets the same property beats them. Use the
+   important modifier there, e.g. class="dg-icon-btn lg:hidden!".
+
+   theme(inline reference) and @theme inline reference write values straight into each utility
+   and put no theme variables on :root. styles.scss defines tokens with the same names
+   (--radius-lg: 12px, --font-mono, --color-error…) for its own rules; inline keeps them out of
+   Tailwind classes, and reference keeps Tailwind's values out of var(--color-primary, …)-style
+   fallbacks in templates.
+   ══════════════════════════════════════════════ */
+@import "tailwindcss/theme.css" theme(inline reference);
+@import "tailwindcss/preflight.css";
+@import "tailwindcss/utilities.css" source(none);
+
+@source "./**/*.{html,ts}";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline reference {
+  /* ── Theme-switchable via CSS custom properties (tokens live in styles.scss) ── */
+  /* Surface hierarchy — RGB channels so /opacity modifiers work */
+  --color-surface:                   rgb(var(--rgb-surface));
+  --color-surface-bright:            rgb(var(--rgb-surface));
+  --color-surface-dim:               rgb(var(--rgb-surface-dim));
+  --color-surface-variant:           rgb(var(--rgb-surface-container-highest));
+  --color-surface-container-lowest:  rgb(var(--rgb-surface-container-lowest));
+  --color-surface-container-low:     rgb(var(--rgb-surface-container-low));
+  --color-surface-container:         rgb(var(--rgb-surface-container));
+  --color-surface-container-high:    rgb(var(--rgb-surface-container-high));
+  --color-surface-container-highest: rgb(var(--rgb-surface-container-highest));
+  --color-background:                rgb(var(--rgb-surface));
+
+  /* Text / icon colors */
+  --color-on-surface:           var(--color-on-surface);
+  --color-on-surface-variant:   var(--color-on-surface-variant);
+  --color-on-background:        var(--color-on-surface);
+  --color-on-primary-container: var(--color-on-primary-container);
+
+  /* Borders */
+  --color-outline-variant: rgb(var(--rgb-outline-variant));
+  --color-outline:         rgb(var(--rgb-outline));
+
+  /* Brand (violet #6366f1). Named "brand", not "secondary": Bootstrap ships
+     !important .bg-secondary/.text-secondary utilities that would win. */
+  --color-brand:    rgb(var(--rgb-brand));
+  --color-on-brand: rgb(var(--rgb-on-brand));
+
+  /* Info / deep backgrounds */
+  --color-primary-container: var(--color-primary-container);
+
+  /* ── Static (no dark-mode switch needed) ── */
+  --color-surface-tint:              #515f78;
+  --color-error:                     #ba1a1a;
+  --color-error-container:           #ffdad6;
+  --color-on-error:                  #ffffff;
+  --color-on-error-container:        #93000a;
+  --color-on-primary-fixed:          #0d1c32;
+  --color-inverse-primary:           #b9c7e4;
+  --color-tertiary:                  #000000;
+  --color-on-tertiary:               #ffffff;
+  --color-on-tertiary-fixed-variant: #5d4124;
+  --color-primary:                   #000000;
+  --color-on-tertiary-fixed:         #2b1701;
+  --color-on-primary-fixed-variant:  #39475f;
+  --color-inverse-on-surface:        #eff1f3;
+  --color-inverse-surface:           #2d3133;
+  --color-primary-fixed:             #d6e3ff;
+  --color-on-primary:                #ffffff;
+  --color-on-tertiary-container:     #9f7d5b;
+  --color-tertiary-container:        #2b1701;
+  --color-tertiary-fixed:            #ffdcbd;
+  --color-tertiary-fixed-dim:        #e7bf99;
+  --color-primary-fixed-dim:         #b9c7e4;
+
+  --font-headline: Manrope, sans-serif;
+  --font-body:     Inter, sans-serif;
+  --font-label:    Inter, sans-serif;
+
+  /* The Tailwind 3 scale this app used: rounded, rounded-lg, rounded-xl, rounded-full */
+  --radius:      0.125rem;
+  --radius-lg:   0.25rem;
+  --radius-xl:   0.5rem;
+  --radius-full: 0.75rem;
+}
+
+/* Tailwind 3 preflight rules that Tailwind 4 dropped or changed. Tailwind 4 resets margins and
+   padding with a zero-specificity * rule, which Bootstrap Reboot's element rules (p, ul, h1…)
+   beat; Tailwind 3 reset them with element selectors that came after Reboot. */
+blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre {
+  margin: 0;
+}
+
+ol, ul, menu {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  line-height: inherit;
+}
+
+*,
+::after,
+::before,
+::backdrop,
+::file-selector-button {
+  border-color: #e5e7eb;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+:disabled {
+  cursor: default;
+}

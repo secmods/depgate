@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+.angular/
+
+# Environment
+.env
+.env.local
+.env.*.local
+deploy/*/.env
+deploy/*/.env.bak
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test / Coverage
+coverage/
+perf/results/
+.nyc_output/
+.vitest/
+playwright-report/
+test-results/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+tmp/
+*.tgz
+playwright-report/
+.gstack/
+
+# Deployment: keep the examples, never certificates or keys
+!.env.example
+deploy/*/certs/*
+!deploy/*/certs/.gitkeep
+deploy/*/local-ca/
+
+.claude/worktrees/*

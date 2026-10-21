@@ -1,0 +1,125 @@
+# DEVELOPMENT ONLY. Builds from source, uses default passwords, and publishes Postgres and Redis.
+# Never use it for an installation. Production: deploy/docker-compose.yml (see deploy/README.md).
+#
+#   docker compose up --build        UI, API and registries at http://localhost:3050
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: depgate
+      POSTGRES_PASSWORD: depgate
+      POSTGRES_DB: depgate
+    ports:
+      # Localhost only: for npm run dev:backend and integration tests on this machine.
+      # The backend container reaches it as postgres:5432 without this.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U depgate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    # One Redis for caching and job queues: never evict (queued jobs must not vanish) and persist jobs (AOF).
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory-policy", "noeviction"]
+    ports:
+      # Localhost only, as for Postgres: no password, so never on the network.
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # One image serves the UI, the API and the registries on one port.
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # Localhost only: the dev admin is admin/admin. Containers (test_apps) reach it through
+      # host.docker.internal on Docker Desktop. On Linux, publish "3050:3050" instead.
+      - "127.0.0.1:3050:3050"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      PORT: 3050
+      HOST: 0.0.0.0
+      LOG_LEVEL: info
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@depgate.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      # Base for links in 403 responses and emails. UI_URL stays unset so the address an admin
+      # signs in from is learned (charter case 33); set it to pin the links instead.
+      GATEWAY_URL: ${GATEWAY_URL:-http://localhost:3050}
+      UI_URL: ${UI_URL:-}
+      # The sidebar's Help > Documentation link; hidden when unset.
+      DOCS_URL: ${DOCS_URL:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-DepGate <no-reply@depgate.local>}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: depgate
+      DB_PASSWORD: depgate
+      DB_NAME: depgate
+      DB_SSL: "false"
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+      AUDIT_LOG_ALLOWS: ${AUDIT_LOG_ALLOWS:-true}
+      # Sign-in load tests come from one address: SSO_RATE_LIMIT=0 docker compose up -d backend
+      SSO_RATE_LIMIT: ${SSO_RATE_LIMIT:-600}
+      # Artifact cache: off by default here; switch it on in Settings > Artifact cache, or ARTIFACT_CACHE_ENABLED=true.
+      ARTIFACT_CACHE_ENABLED: ${ARTIFACT_CACHE_ENABLED:-false}
+      ARTIFACT_CACHE_DIR: /var/lib/depgate/artifacts
+      ARTIFACT_CACHE_MAX_SIZE_GB: ${ARTIFACT_CACHE_MAX_SIZE_GB:-10}
+    volumes:
+      - artifacts:/var/lib/depgate/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # readyz also checks Postgres and Redis, so `docker compose up --wait` returns a DepGate that can serve.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3050/readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
+
+  # Test identity provider for single sign-on (OIDC and SAML). Not started by `docker compose up`;
+  # `npm run test:e2e` starts it (e2e/stack.mjs), or by hand:
+  #   docker compose --profile sso up -d keycloak
+  # Issuer: http://keycloak.localhost:8180/realms/depgate   client: depgate / depgate-dev-secret
+  # Browsers resolve *.localhost to 127.0.0.1 by themselves; DepGate reaches the same name through the
+  # network alias below, so one issuer URL works for both. Users and passwords: e2e/keycloak/depgate-realm.json.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.0
+    profiles: ["sso"]
+    command: ["start-dev", "--import-realm", "--http-port=8180", "--hostname=http://keycloak.localhost:8180"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "127.0.0.1:8180:8180"
+    volumes:
+      - ./e2e/keycloak:/opt/keycloak/data/import:ro
+    networks:
+      default:
+        aliases:
+          - keycloak.localhost
+
+volumes:
+  pgdata:
+  redisdata:
+  artifacts:

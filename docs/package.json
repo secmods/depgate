@@ -1,0 +1,22 @@
+{
+  "name": "@depgate/docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DepGate documentation site (VitePress)",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4"
+  },
+  "dependencies": {
+    "medium-zoom": "^1.1.0"
+  },
+  "overrides": {
+    "vite": "^6.4.4"
+  }
+}

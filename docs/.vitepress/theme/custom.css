@@ -1,0 +1,166 @@
+/* DepGate brand: violet primary, matching the web UI. */
+:root {
+  --vp-c-brand-1: #4f46e5;
+  --vp-c-brand-2: #6366f1;
+  --vp-c-brand-3: #6366f1;
+  --vp-c-brand-soft: rgba(99, 102, 241, 0.14);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #6366f1 20%, #1d9a7a);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #6366f1 50%, #1d9a7a 50%);
+  --vp-home-hero-image-filter: blur(56px);
+}
+
+.dark {
+  --vp-c-brand-1: #a5b4fc;
+  --vp-c-brand-2: #818cf8;
+  --vp-c-brand-3: #6366f1;
+  --vp-c-brand-soft: rgba(129, 140, 248, 0.16);
+}
+
+/* Screenshots: framed, and zoomable on click. */
+.vp-doc img {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  cursor: zoom-in;
+  margin: 8px 0;
+}
+.vp-doc img.no-zoom {
+  border: 0;
+  box-shadow: none;
+  cursor: default;
+}
+.medium-zoom-overlay,
+.medium-zoom-image--opened {
+  z-index: 999;
+}
+
+/* Numbered steps read as a procedure. */
+.vp-doc .steps > ol > li {
+  margin-top: 1.25em;
+}
+
+.VPHomeFeatures .VPFeature .title {
+  font-size: 16px;
+}
+
+/* ── Diagrams (inline SVG components; colors follow the light/dark theme) ── */
+.dg-figure {
+  margin: 28px 0 32px;
+}
+.dg-canvas {
+  display: block;
+  width: 100%;
+  padding: 20px 20px 16px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg);
+  cursor: zoom-in;
+  overflow-x: auto;
+  text-align: left;
+}
+.dg-canvas:hover {
+  border-color: var(--vp-c-brand-2);
+}
+.dg-canvas:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+.dg-figure figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+}
+.dg-hint {
+  flex: none;
+  color: var(--vp-c-text-3);
+}
+.dg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: color-mix(in srgb, var(--vp-c-bg) 92%, transparent);
+  backdrop-filter: blur(4px);
+  cursor: zoom-out;
+}
+.dg-overlay-inner {
+  width: min(1400px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 14px;
+  background: var(--vp-c-bg);
+  box-shadow: var(--vp-shadow-4);
+}
+.dg-svg {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+  font-family: var(--vp-font-family-base);
+}
+.dg-overlay .dg-svg {
+  min-width: 0;
+}
+
+/* Shapes */
+.dg-box { fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); stroke-width: 1.2; }
+.dg-optional { stroke-dasharray: 5 4; }
+.dg-zone { fill: none; stroke: var(--vp-c-divider); stroke-width: 1.4; stroke-dasharray: 7 5; }
+.dg-chip { fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); }
+.dg-pill { fill: var(--vp-c-bg); stroke: var(--vp-c-divider); }
+.dg-row { fill: var(--vp-c-bg); stroke: var(--vp-c-brand-soft); }
+.dg-gate { fill: var(--vp-c-brand-soft); stroke: var(--vp-c-brand-2); stroke-width: 1.6; }
+.dg-stack { opacity: 0.55; }
+.dg-internal { fill: rgba(29, 154, 122, 0.1); stroke: #1d9a7a; stroke-width: 1.4; }
+.dg-good { fill: var(--vp-c-green-soft); stroke: var(--vp-c-green-2); }
+.dg-bad { fill: var(--vp-c-red-soft); stroke: var(--vp-c-red-2); }
+.dg-bad-outline { fill: var(--vp-c-bg); stroke: var(--vp-c-red-2); stroke-dasharray: 4 3; }
+.dg-divider { stroke: var(--vp-c-divider); stroke-width: 1; }
+
+/* Lines */
+.dg-line { fill: none; stroke: var(--vp-c-text-3); stroke-width: 1.6; }
+.dg-line-good { fill: none; stroke: var(--vp-c-green-2); stroke-width: 1.8; }
+.dg-line-bad { fill: none; stroke: var(--vp-c-red-2); stroke-width: 1.8; }
+.dg-dashed { stroke-dasharray: 5 4; }
+.dg-arrowhead { fill: var(--vp-c-text-3); }
+.dg-arrowhead-good { fill: var(--vp-c-green-2); }
+.dg-arrowhead-bad { fill: var(--vp-c-red-2); }
+
+/* Icons */
+.dg-icon { fill: none; stroke: var(--vp-c-text-2); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dg-icon-brand .dg-icon, .dg-icon.dg-icon-brand { stroke: var(--vp-c-brand-1); }
+.dg-icon-internal .dg-icon, .dg-icon.dg-icon-internal { stroke: #1d9a7a; }
+.dg-icon-good .dg-icon, .dg-icon.dg-icon-good { stroke: var(--vp-c-green-1); }
+.dg-icon-bad .dg-icon, .dg-icon.dg-icon-bad { stroke: var(--vp-c-red-1); }
+
+/* Text */
+.dg-svg text { fill: var(--vp-c-text-1); }
+.dg-title { font-size: 16px; font-weight: 700; }
+.dg-gate-title { font-size: 20px; font-weight: 800; fill: var(--vp-c-brand-1) !important; }
+.dg-gate-title-sm { font-size: 16px; }
+.dg-strong { font-size: 14.5px; font-weight: 600; }
+.dg-body { font-size: 14px; }
+.dg-small { font-size: 12.5px; fill: var(--vp-c-text-2) !important; }
+.dg-mono { font-family: var(--vp-font-family-mono); font-size: 12.5px; }
+.dg-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; fill: var(--vp-c-text-3) !important; }
+.dg-label { font-size: 12px; font-weight: 700; fill: var(--vp-c-text-2) !important; }
+.dg-label-internal { font-size: 12px; font-weight: 700; fill: #1d9a7a !important; }
+.dg-text-good { font-size: 13px; font-weight: 600; fill: var(--vp-c-green-1) !important; }
+.dg-text-bad { font-size: 13px; font-weight: 600; fill: var(--vp-c-red-1) !important; }
+
+/* Wide pages: diagrams use the full width, text keeps a readable line length. */
+.dg-wide-page .vp-doc > div > :not(.dg-figure):not(:has(> img)) {
+  max-width: 760px;
+}
+.dg-solid { fill: var(--vp-c-bg); stroke: none; }
+.dg-stop { fill: var(--vp-c-bg); stroke: var(--vp-c-red-2); stroke-width: 1.8; }
+.dg-stop-x { stroke: var(--vp-c-red-1); stroke-width: 2; stroke-linecap: round; }

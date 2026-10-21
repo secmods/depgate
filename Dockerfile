@@ -5,7 +5,7 @@
 # Production deployment (images only, no build): see deploy/README.md.
 
 # ---- Dependencies for both workspaces, from the one lockfile ----
-FROM node:24-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY packages/backend/package.json packages/backend/
@@ -23,7 +23,7 @@ COPY packages/backend packages/backend
 RUN npm run build --workspace=@depgate/backend
 
 # ---- Runtime: production dependencies and compiled output only ----
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 ENV NODE_ENV=production \
     PORT=8080 \
     HOST=0.0.0.0 \

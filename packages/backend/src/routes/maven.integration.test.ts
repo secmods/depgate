@@ -267,7 +267,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('Maven proxy routes', () => {
   });
 
   it('CVE severity policy blocks maven version when OSV cache indicates HIGH', async () => {
-    const osvCacheKey = `osv:vuln:maven:${MAVEN_PACKAGE}:${MAVEN_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:maven:${MAVEN_PACKAGE}:${MAVEN_VERSION}`;
     await app.redis.set(
       osvCacheKey,
       JSON.stringify({
@@ -299,7 +299,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('Maven proxy routes', () => {
   });
 
   it('CVE ID block list policy blocks maven version when OSV cache has matching CVE', async () => {
-    const osvCacheKey = `osv:vuln:maven:${MAVEN_PACKAGE}:${MAVEN_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:maven:${MAVEN_PACKAGE}:${MAVEN_VERSION}`;
     await app.redis.set(
       osvCacheKey,
       JSON.stringify({

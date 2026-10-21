@@ -66,7 +66,6 @@ DepGate moves the decision to the moment of download:
 -->
 
 <p align="center">
-  <img src=".github/assets/demo.gif" alt="Two-minute DepGate walkthrough: a security engineer creates the policy &quot;Critical vulnerabilities&quot;, npm install minimist@1.2.5 is refused with a 403 naming the policy and CVE-2021-44906, the block appears in the Decision Ledger, Package check shows 1.2.5 blocked and recommends the newest allowed version, and a waiver is requested and approved" width="880">
 
   [![Watch the video](docs/public/screenshots/login.png)](https://github.com/user-attachments/assets/43debc5c-6cf1-4654-b9ca-83b3858be98d)
 </p>
@@ -164,7 +163,12 @@ DepGate aims to be the open-source answer to the commercial "repository firewall
 
 ## Tech stack
 
-TypeScript end to end. **Backend:** Fastify, TypeORM, PostgreSQL, Redis, SQL migrations. **Web interface:** Angular and Angular Material. **Tests:** Vitest, Supertest, Playwright, k6. One Docker image serves the API, the registries and the UI.
+TypeScript end to end.
+
+- **Backend:** Fastify, TypeORM, PostgreSQL, Redis, SQL migrations
+- **Web interface:** Angular, Angular Material
+- **Tests:** Vitest, Supertest, Playwright, k6
+- **Deployment:** One Docker image serves the API, the registries and the UI
 
 ## Contributing
 

@@ -316,7 +316,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('RubyGems proxy routes', () => {
 
   it('CVE severity threshold policy blocks rubygems artifact when OSV cache indicates HIGH', async () => {
     expect(cachedFilePath, 'cachedFilePath must be set').toBeTruthy();
-    const osvCacheKey = `osv:vuln:rubygems:${RUBYGEMS_PACKAGE}:${cachedVersion}`;
+    const osvCacheKey = `osv:vuln:v3:rubygems:${RUBYGEMS_PACKAGE}:${cachedVersion}`;
     await app.redis.set(osvCacheKey, JSON.stringify({
       vulns: [{ id: 'CVE-RUBYGEMS-2026-0001', severity: HIGH_CVSS }],
     }));
@@ -341,7 +341,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('RubyGems proxy routes', () => {
 
   it('CVE ID block list policy blocks rubygems artifact when OSV cache has matching CVE', async () => {
     expect(cachedFilePath, 'cachedFilePath must be set').toBeTruthy();
-    const osvCacheKey = `osv:vuln:rubygems:${RUBYGEMS_PACKAGE}:${cachedVersion}`;
+    const osvCacheKey = `osv:vuln:v3:rubygems:${RUBYGEMS_PACKAGE}:${cachedVersion}`;
     await app.redis.set(osvCacheKey, JSON.stringify({
       vulns: [{ id: 'CVE-RUBYGEMS-2026-4242', severity: MEDIUM_CVSS }],
     }));

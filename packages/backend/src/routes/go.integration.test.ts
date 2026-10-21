@@ -268,7 +268,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('Go proxy routes', () => {
   });
 
   it('CVE severity policy blocks go version when OSV cache indicates HIGH', async () => {
-    const osvCacheKey = `osv:vuln:go:${GO_MODULE}:${GO_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:go:${GO_MODULE}:${GO_VERSION}`;
     await app.redis.set(
       osvCacheKey,
       JSON.stringify({
@@ -300,7 +300,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('Go proxy routes', () => {
   });
 
   it('CVE ID block list policy blocks go version when OSV cache has matching CVE', async () => {
-    const osvCacheKey = `osv:vuln:go:${GO_MODULE}:${GO_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:go:${GO_MODULE}:${GO_VERSION}`;
     await app.redis.set(
       osvCacheKey,
       JSON.stringify({

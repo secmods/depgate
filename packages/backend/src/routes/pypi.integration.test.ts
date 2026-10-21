@@ -117,8 +117,12 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('PyPI routes', () => {
     expect(response.text).toMatch(/data-(dist-info|core)-metadata/);
     const href = response.text.match(/href="http:\/\/[^/]+(\/pypi\/[^"#]*requests-2\.32\.3-py3-none-any\.whl)/)![1];
     const metadata = await pypiAuth(supertest(app.server).get(`${href}.metadata`)).expect(200);
-    expect(metadata.text).toMatch(/^Metadata-Version:/m);
-    expect(metadata.text).toMatch(/^Name: requests$/m);
+    // The gateway passes the upstream Content-Type through, and PyPI's CDN answers with binary/octet-stream or
+    // application/octet-stream depending on the backend. supertest exposes the first as text and the second as a
+    // Buffer, so read the body either way.
+    const text = typeof metadata.text === 'string' ? metadata.text : Buffer.from(metadata.body as Buffer).toString('utf8');
+    expect(text).toMatch(/^Metadata-Version:/m);
+    expect(text).toMatch(/^Name: requests$/m);
   }, 30000);
 
   it('file route accepts wheel names longer than 100 characters', async () => {
@@ -325,7 +329,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('PyPI routes', () => {
   });
 
   it('CVE severity threshold policy blocks PyPI artifact when OSV cache indicates HIGH', async () => {
-    const osvCacheKey = `osv:vuln:pypi:${KNOWN_PYPI_PACKAGE}:${KNOWN_PYPI_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:pypi:${KNOWN_PYPI_PACKAGE}:${KNOWN_PYPI_VERSION}`;
     await app.redis.set(
       osvCacheKey,
       JSON.stringify({
@@ -365,7 +369,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('PyPI routes', () => {
   });
 
   it('CVE ID block list policy blocks PyPI artifact when OSV cache has matching CVE', async () => {
-    const osvCacheKey = `osv:vuln:pypi:${KNOWN_PYPI_PACKAGE}:${KNOWN_PYPI_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:pypi:${KNOWN_PYPI_PACKAGE}:${KNOWN_PYPI_VERSION}`;
     await app.redis.set(
       osvCacheKey,
       JSON.stringify({

@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MonitorPackage, MonitorPolicy, MonitorService } from '../../services/monitor.service';
 import { ToastService } from '../../services/toast.service';
-import { EcoTagComponent } from '../../shared/eco-tag.component';
 import { MODAL_DATA } from '../../tokens';
 import {
   APPROVAL_MAX_LENGTH,
@@ -31,7 +30,7 @@ const CHOICE_LABELS: Record<ApprovalChoice, string> = {
 @Component({
   selector: 'app-approve-dialog',
   standalone: true,
-  imports: [FormsModule, EcoTagComponent],
+  imports: [FormsModule],
   template: `
     <div class="modal-header">
       <div class="min-w-0">

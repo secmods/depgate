@@ -257,7 +257,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('Cargo proxy routes', () => {
   }, 20000);
 
   it('CVE severity threshold policy blocks cargo artifact when OSV cache indicates HIGH', async () => {
-    const osvCacheKey = `osv:vuln:cargo:${CARGO_PACKAGE}:${CARGO_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:cargo:${CARGO_PACKAGE}:${CARGO_VERSION}`;
     await app.redis.set(osvCacheKey, JSON.stringify({
       vulns: [{ id: 'CVE-CARGO-2026-0001', severity: HIGH_CVSS }],
     }));
@@ -281,7 +281,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('Cargo proxy routes', () => {
   }, 20000);
 
   it('CVE ID block list policy blocks cargo artifact when OSV cache has matching CVE', async () => {
-    const osvCacheKey = `osv:vuln:cargo:${CARGO_PACKAGE}:${CARGO_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:cargo:${CARGO_PACKAGE}:${CARGO_VERSION}`;
     await app.redis.set(osvCacheKey, JSON.stringify({
       vulns: [{ id: 'CVE-CARGO-2026-4242', severity: MEDIUM_CVSS }],
     }));

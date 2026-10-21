@@ -241,7 +241,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('NuGet proxy routes', () => {
   }, 20000);
 
   it('CVE severity threshold policy blocks nuget artifact when OSV cache indicates HIGH', async () => {
-    const osvCacheKey = `osv:vuln:nuget:${NUGET_PACKAGE}:${NUGET_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:nuget:${NUGET_PACKAGE}:${NUGET_VERSION}`;
     await app.redis.set(osvCacheKey, JSON.stringify({
       vulns: [{ id: 'CVE-NUGET-2026-0001', severity: HIGH_CVSS }],
     }));
@@ -265,7 +265,7 @@ describe.skipIf(!process.env.RUN_INTEGRATION)('NuGet proxy routes', () => {
   }, 20000);
 
   it('CVE ID block list policy blocks nuget artifact when OSV cache has matching CVE', async () => {
-    const osvCacheKey = `osv:vuln:nuget:${NUGET_PACKAGE}:${NUGET_VERSION}`;
+    const osvCacheKey = `osv:vuln:v3:nuget:${NUGET_PACKAGE}:${NUGET_VERSION}`;
     await app.redis.set(osvCacheKey, JSON.stringify({
       vulns: [{ id: 'CVE-NUGET-2026-4242', severity: MEDIUM_CVSS }],
     }));

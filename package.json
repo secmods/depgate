@@ -1,6 +1,6 @@
 {
   "name": "depgate",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "DepGate — Control what enters your software supply chain. Proxy, cache, and policy engine for npm, PyPI, Go, and Maven",
   "workspaces": [

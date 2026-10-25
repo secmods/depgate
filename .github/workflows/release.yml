@@ -2,10 +2,12 @@
 # release with the image file, its checksum, and the deploy/ folder. Two ways to start it:
 #
 #   Actions → Release → Run workflow, choose patch, minor, or major.
-#   The job bumps the version, commits package.json and the deploy files to main, and tags that commit.
+#   The bump job commits package.json and the deploy files to main and tags that commit. It pushes with
+#   the deploy key RELEASE_DEPLOY_KEY, which the "Protect main" ruleset lets bypass its rules, and that
+#   tag push starts the release job here and docs.yml.
 #
-#   On main: npm version <x.y.z> && git push --follow-tags
-#   RELEASING.md describes that path.
+#   Push a tag v<x.y.z> for a commit already on main.
+#   RELEASING.md describes both paths and the deploy key setup.
 name: Release
 
 on:
@@ -26,7 +28,6 @@ on:
 permissions:
   contents: write
   packages: write
-  actions: write
 
 concurrency:
   group: release
@@ -36,14 +37,20 @@ env:
   IMAGE: ghcr.io/secmods/depgate
 
 jobs:
-  release:
+  bump:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # The environment holds RELEASE_DEPLOY_KEY and only lets main use it.
+    environment: release
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          # A UI run always releases the tip of main, whichever branch was selected in the form.
-          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
+          # A UI run always bumps the tip of main, whichever branch was selected in the form.
+          ref: main
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
 
       - name: Setup Node
         uses: actions/setup-node@v7
@@ -52,10 +59,9 @@ jobs:
           cache: 'npm'
 
       # npm version commits the root package.json, then the version script stamps the workspace
-      # package.json files and the deploy files and stages them. Pushing with the workflow token
-      # does not start this workflow again, so the publish steps below run in this same job.
+      # package.json files and the deploy files and stages them. --atomic: main and the tag land
+      # together or not at all.
       - name: Bump the version on main
-        if: github.event_name == 'workflow_dispatch'
         env:
           BUMP: ${{ inputs.bump }}
         run: |
@@ -67,10 +73,23 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           npm version "$BUMP" -m "Release %s"
-          git push origin HEAD:main --follow-tags
+          git push --atomic origin HEAD:main --follow-tags
+
+  release:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
 
       - name: The tag is on main
-        if: github.event_name == 'push'
         run: |
           git fetch origin main
           if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
@@ -165,12 +184,3 @@ jobs:
             release/depgate-${{ steps.version.outputs.version }}.tar
             release/depgate-${{ steps.version.outputs.version }}.tar.sha256
             release/deploy-${{ steps.version.outputs.version }}.tar.gz
-
-      # A tag pushed by a person starts docs.yml on its own. A tag pushed by this job does not, so
-      # start that workflow here. workflow_dispatch is one of the events the workflow token may start.
-      - name: Publish the documentation
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: gh workflow run docs.yml --ref "v${VERSION}"

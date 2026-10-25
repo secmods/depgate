@@ -21,7 +21,7 @@ labels:
 images:
   - name: secmods/depgate
     # The release this folder belongs to. Stamped by the release; change it to upgrade (README: Upgrade).
-    newTag: 1.0.2
+    newTag: 1.0.3
     # When the cluster cannot pull from Docker Hub: the same image from GitHub, or your registry mirror.
     # newName: ghcr.io/secmods/depgate
     # newName: registry.example.com/depgate

@@ -36,7 +36,7 @@
     "fastify-plugin": "^6.0.1",
     "ioredis": "^6.0.0",
     "minimatch": "^10.2.6",
-    "nodemailer": "^10.1.2",
+    "nodemailer": "^10.1.4",
     "openid-client": "^6.8.8",
     "pg": "^8.23.1",
     "pino": "^10.4.0",

@@ -26,6 +26,7 @@ import {
   selectChangeOps,
   trackedRecordCount,
   verifySha256,
+  feedVersionsToRange,
 } from './malicious-feed.js';
 
 const execFileAsync = promisify(execFile);
@@ -67,7 +68,7 @@ const WRITE_CHUNK = 1000;
 
 type PackageKey = { name: string; source: 'default' | 'custom' };
 
-type FeedRow = { name: string; ecosystem: string; reason: string | null };
+type FeedRow = { name: string; ecosystem: string; reason: string | null; versionRange: string | null };
 
 export type MaliciousPackageStore = {
   listByEcosystem(ecosystem: string): Promise<PackageKey[]>;
@@ -113,6 +114,15 @@ function reasonFromId(id: string | undefined): string | null {
   return id ?? null;
 }
 
+function feedRow(ecosystem: string, name: string, id: string | undefined, versions?: string[]): FeedRow {
+  return {
+    name,
+    ecosystem,
+    reason: reasonFromId(id),
+    versionRange: feedVersionsToRange(ecosystem, versions),
+  };
+}
+
 function asRows(result: unknown): unknown[] {
   if (Array.isArray(result)) return result;
   if (result && typeof result === 'object' && Array.isArray((result as { rows?: unknown[] }).rows)) {
@@ -147,11 +157,14 @@ export function createPackageStore(db: DataSource): MaliciousPackageStore {
     async insertDefault(rows) {
       for (const part of chunk(rows, WRITE_CHUNK)) {
         await db.query(
-          `INSERT INTO malicious_packages (id, name, ecosystem, lookup_name, reason, source, override_status, created_at)
-           SELECT id, name, ecosystem, lookup_name, reason, 'default', 'BLOCK', NOW()
-           FROM unnest($1::uuid[], $2::varchar[], $3::varchar[], $4::varchar[], $5::text[])
-             AS t(id, name, ecosystem, lookup_name, reason)
-           ON CONFLICT (name, ecosystem) DO UPDATE SET reason = EXCLUDED.reason, lookup_name = EXCLUDED.lookup_name
+          `INSERT INTO malicious_packages (id, name, ecosystem, lookup_name, reason, version_range, source, override_status, created_at)
+           SELECT id, name, ecosystem, lookup_name, reason, version_range, 'default', 'BLOCK', NOW()
+           FROM unnest($1::uuid[], $2::varchar[], $3::varchar[], $4::varchar[], $5::text[], $6::varchar[])
+             AS t(id, name, ecosystem, lookup_name, reason, version_range)
+           ON CONFLICT (name, ecosystem) DO UPDATE SET
+             reason = EXCLUDED.reason,
+             lookup_name = EXCLUDED.lookup_name,
+             version_range = EXCLUDED.version_range
            WHERE malicious_packages.source = 'default'`,
           [
             part.map(() => randomUUID()),
@@ -159,6 +172,7 @@ export function createPackageStore(db: DataSource): MaliciousPackageStore {
             part.map((row) => row.ecosystem),
             part.map((row) => canonicalPackageName(row.ecosystem, row.name)),
             part.map((row) => row.reason),
+            part.map((row) => row.versionRange),
           ]
         );
       }
@@ -170,14 +184,15 @@ export function createPackageStore(db: DataSource): MaliciousPackageStore {
         const ecosystem = part[0].ecosystem;
         await db.query(
           `UPDATE malicious_packages AS m
-           SET reason = v.reason, lookup_name = v.lookup_name
-           FROM unnest($2::varchar[], $3::text[], $4::varchar[]) AS v(name, reason, lookup_name)
+           SET reason = v.reason, lookup_name = v.lookup_name, version_range = v.version_range
+           FROM unnest($2::varchar[], $3::text[], $4::varchar[], $5::varchar[]) AS v(name, reason, lookup_name, version_range)
            WHERE m.ecosystem = $1 AND m.name = v.name AND m.source = 'default'`,
           [
             ecosystem,
             part.map((row) => row.name),
             part.map((row) => row.reason),
             part.map((row) => canonicalPackageName(ecosystem, row.name)),
+            part.map((row) => row.versionRange),
           ]
         );
       }
@@ -267,7 +282,7 @@ export async function applySnapshot(
 
   for (const record of limited) {
     seen.add(record.name);
-    const row: FeedRow = { name: record.name, ecosystem, reason: reasonFromId(record.id) };
+    const row: FeedRow = feedRow(ecosystem, record.name, record.id, record.versions);
     const source = byName.get(record.name);
     if (source === 'custom') {
       skippedCustom++;
@@ -324,7 +339,7 @@ export async function applyChanges(
       if (source === 'default') deletes.push(op.name);
       continue;
     }
-    const row: FeedRow = { name: op.name, ecosystem, reason: reasonFromId(op.id) };
+    const row: FeedRow = feedRow(ecosystem, op.name, op.id, op.versions);
     if (source === 'default') updates.push(row);
     else inserts.push(row);
   }

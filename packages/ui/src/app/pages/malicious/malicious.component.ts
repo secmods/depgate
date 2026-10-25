@@ -14,9 +14,13 @@ import { PageChange, PaginationComponent, savedPageSize } from '../../shared/pag
 import { SearchInputComponent } from '../../shared/search-input.component';
 import { StatusPillComponent } from '../../shared/status-pill.component';
 import { ecosystemLabel } from '../../shared/status';
+import { sortedVersionParts, versionRuns } from '../policies/policy-rules';
 import { OverrideDialogComponent } from './override-dialog.component';
 import { MaliciousFormDialogComponent } from './malicious-form-dialog.component';
 import { MaliciousViewDialogComponent } from './malicious-view-dialog.component';
+
+/** Versions listed in a table row; the rest are counted, and every one is in the tooltip and the details dialog. */
+const VERSIONS_SHOWN = 2;
 
 const ECOSYSTEMS = ['npm', 'pypi', 'go', 'maven', 'nuget', 'cargo', 'composer', 'crates.io', 'rubygems'];
 
@@ -150,7 +154,21 @@ const ECOSYSTEMS = ['npm', 'pypi', 'go', 'maven', 'nuget', 'cargo', 'composer', 
                     <td><span class="dg-cell-primary">{{ row.name }}</span></td>
                     <td><app-eco-tag [ecosystem]="row.ecosystem" /></td>
                     <td><span class="dg-cell-truncate font-mono text-xs" [title]="row.reason || ''">{{ row.reason || '—' }}</span></td>
-                    <td><span class="dg-tag">{{ row.versionRange || 'all versions' }}</span></td>
+                    <td>
+                      @let versions = versionRuns(versionParts(row.versionRange));
+                      @if (versions.length === 0) {
+                        <span class="dg-tag">all versions</span>
+                      } @else {
+                        <span class="d-inline-flex align-items-center gap-1 text-nowrap" [title]="versions.join(', ')">
+                          @for (version of versions.slice(0, VERSIONS_SHOWN); track version) {
+                            <span class="dg-tag">{{ version }}</span>
+                          }
+                          @if (versions.length > VERSIONS_SHOWN) {
+                            <span class="dg-text-muted text-xs">+{{ versions.length - VERSIONS_SHOWN }} more</span>
+                          }
+                        </span>
+                      }
+                    </td>
                     <td class="col-nowrap">{{ row.source === 'custom' ? 'Custom' : 'Threat feed' }}</td>
                     <td><app-status-pill [value]="row.overrideStatus" [label]="row.overrideStatus === 'ALLOW' ? 'Allowed' : 'Blocked'" /></td>
                     <td class="col-actions">
@@ -234,6 +252,10 @@ export class MaliciousComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
   }
+
+  readonly VERSIONS_SHOWN = VERSIONS_SHOWN;
+  readonly versionParts = sortedVersionParts;
+  readonly versionRuns = versionRuns;
 
   label(ecosystem: string): string {
     return ecosystemLabel(ecosystem);

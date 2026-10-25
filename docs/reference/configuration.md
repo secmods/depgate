@@ -12,7 +12,7 @@ Settings that Security users change in the web interface (repositories, single s
 | `JWT_SECRET` | Secret that signs sessions and registry tokens. Generate it with `openssl rand -hex 32` and keep it: changing it signs everyone out and invalidates every registry token. |
 | `ADMIN_EMAIL` | The first Security account, created on first start on an empty database only. Changing it later does nothing. |
 | `ADMIN_PASSWORD` | Its initial password, read at that first start only. Change it in the web interface afterwards; both variables may then be removed. |
-| `DEPGATE_IMAGE`, `DEPGATE_VERSION` | The image and tag to run (Compose setups; `ghcr.io/secmods/depgate` and the release version). On Kubernetes: `images:` in `kustomization.yaml`. |
+| `DEPGATE_IMAGE`, `DEPGATE_VERSION` | The image and tag to run (Compose setups; `secmods/depgate` and the release version). On Kubernetes: `images:` in `kustomization.yaml`. |
 
 ## Server and HTTPS
 

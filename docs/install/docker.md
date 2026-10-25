@@ -39,7 +39,7 @@ git clone https://github.com/secmods/depgate.git
 cd depgate/deploy
 ```
 
-The image `ghcr.io/secmods/depgate:<version>` is pulled when DepGate first starts; no sign-in is needed. The same image is on Docker Hub as `secmods/depgate:<version>`: set `DEPGATE_IMAGE=secmods/depgate` in `.env` to pull it from there. With an internal registry mirror, set `DEPGATE_IMAGE` in `.env` to the mirror's name (and `docker login` once if it needs sign-in). To build the image yourself, see [Build from source](./build-from-source#build-the-production-image).
+The image `secmods/depgate:<version>` is pulled from Docker Hub when DepGate first starts; no sign-in is needed. The same image is on GitHub as `ghcr.io/secmods/depgate:<version>`: set `DEPGATE_IMAGE=ghcr.io/secmods/depgate` in `.env` to pull it from there. Docker Hub allows a limited number of pulls per hour from one address without signing in; hosts that pull often, or many hosts behind one address, can use GitHub or `docker login`. With an internal registry mirror, set `DEPGATE_IMAGE` in `.env` to the mirror's name (and `docker login` once if it needs sign-in). To build the image yourself, see [Build from source](./build-from-source#build-the-production-image).
 
 ## Step 2: Choose a setup and configure
 
@@ -85,7 +85,7 @@ The settings people usually change:
 
 | Setting | Example | Description |
 |---|---|---|
-| `DEPGATE_IMAGE`, `DEPGATE_VERSION` | `ghcr.io/secmods/depgate`, `1.0.0` | Image name and tag. The version is already filled in for the release the folder came from. |
+| `DEPGATE_IMAGE`, `DEPGATE_VERSION` | `secmods/depgate`, `1.0.0` | Image name and tag. The version is already filled in for the release the folder came from. |
 | `GATEWAY_URL` | `https://depgate.example.com` | The address people and package clients use. Registry responses contain links built from it. |
 | `JWT_SECRET` | output of `openssl rand -hex 32` | Signs sessions and registry tokens. Keep it: a new value signs everyone out and invalidates every registry token. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `security-team@example.com` | The first Security account, created on first start only. Change the password in the web interface afterwards; both variables may then be removed. |

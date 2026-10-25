@@ -19,8 +19,9 @@ labels:
     includeSelectors: true
 
 images:
-  - name: ghcr.io/secmods/depgate
+  - name: secmods/depgate
     # The release this folder belongs to. Stamped by the release; change it to upgrade (README: Upgrade).
     newTag: 1.0.2
-    # A registry mirror, when the cluster has no access to ghcr.io:
+    # When the cluster cannot pull from Docker Hub: the same image from GitHub, or your registry mirror.
+    # newName: ghcr.io/secmods/depgate
     # newName: registry.example.com/depgate

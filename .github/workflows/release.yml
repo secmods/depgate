@@ -1,6 +1,6 @@
-# Publishes ghcr.io/secmods/depgate:<x.y.z> and, on Docker Hub, secmods/depgate:<x.y.z> (linux/amd64 and
-# linux/arm64, no `latest`) and a GitHub release with the image file, its checksum, and the deploy/
-# folder. Two ways to start it:
+# Publishes secmods/depgate:<x.y.z> on Docker Hub, the image the deploy files name, and the same image as
+# ghcr.io/secmods/depgate:<x.y.z> (linux/amd64 and linux/arm64, no `latest`), and a GitHub release with
+# the image file, its checksum, and the deploy/ folder. Two ways to start it:
 #
 #   Actions → Release → Run workflow, choose patch, minor, or major.
 #   The bump job commits package.json and the deploy files to main and tags that commit. It pushes with
@@ -35,8 +35,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  IMAGE: ghcr.io/secmods/depgate
-  DOCKERHUB_IMAGE: docker.io/secmods/depgate
+  # Docker Hub, the name the deploy files use; also the tag inside the release's image file.
+  IMAGE: secmods/depgate
+  GHCR_IMAGE: ghcr.io/secmods/depgate
 
 jobs:
   bump:
@@ -146,7 +147,7 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
-            ${{ env.DOCKERHUB_IMAGE }}:${{ steps.version.outputs.version }}
+            ${{ env.GHCR_IMAGE }}:${{ steps.version.outputs.version }}
           labels: |
             org.opencontainers.image.title=DepGate
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
@@ -188,7 +189,7 @@ jobs:
           name: DepGate ${{ steps.version.outputs.version }}
           generate_release_notes: true
           body: |
-            Image: `${{ env.IMAGE }}:${{ steps.version.outputs.version }}`, also on Docker Hub as `secmods/depgate:${{ steps.version.outputs.version }}` (linux/amd64, linux/arm64).
+            Image: `${{ env.IMAGE }}:${{ steps.version.outputs.version }}` on Docker Hub, also `${{ env.GHCR_IMAGE }}:${{ steps.version.outputs.version }}` (linux/amd64, linux/arm64).
             Files: `depgate-${{ steps.version.outputs.version }}.tar` for hosts without registry access (`docker load -i`), its `.sha256`, and `deploy-${{ steps.version.outputs.version }}.tar.gz` with the deploy folder.
 
             **Database upgrade:** _fill in: none, or the migrations this release applies and how long they take on a large database (raise the Kubernetes startup probe if needed)._

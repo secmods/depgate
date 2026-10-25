@@ -32,7 +32,7 @@ spec:
       containers:
         - name: depgate
           # The tag comes from images: in kustomization.yaml.
-          image: ghcr.io/secmods/depgate
+          image: secmods/depgate
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

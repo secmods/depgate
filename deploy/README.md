@@ -1,6 +1,6 @@
 # Deploying DepGate
 
-One image serves the web UI, the API and every package registry (npm, PyPI, Maven, Go, NuGet, Cargo, Composer, RubyGems) on one address. Everything here runs the published image `ghcr.io/secmods/depgate:<version>`; nothing builds.
+One image serves the web UI, the API and every package registry (npm, PyPI, Maven, Go, NuGet, Cargo, Composer, RubyGems) on one address. Everything here runs the published image `secmods/depgate:<version>` from Docker Hub (also `ghcr.io/secmods/depgate:<version>`); nothing builds.
 
 Copy this whole `deploy/` folder to the server and use one of the three setups. Scripts reach `common/`, so a subfolder does not work on its own.
 
@@ -14,7 +14,7 @@ Copy this whole `deploy/` folder to the server and use one of the three setups. 
 
 ## What every setup needs
 
-- **The image.** Pulled from `ghcr.io/secmods/depgate` without signing in. An internal mirror is set with `DEPGATE_IMAGE` (compose) or `newName` in `kustomization.yaml` (Kubernetes); if the mirror needs sign-in, `docker login` once, or the `depgate-registry` pull secret.
+- **The image.** Pulled from Docker Hub, `secmods/depgate`, without signing in (also published as `ghcr.io/secmods/depgate`). An internal mirror is set with `DEPGATE_IMAGE` (compose) or `newName` in `kustomization.yaml` (Kubernetes); if the mirror needs sign-in, `docker login` once, or the `depgate-registry` pull secret.
 - **PostgreSQL 15 or later** (17 recommended): an empty database and a user that owns it. Each DepGate instance opens up to `DB_POOL_SIZE` (20) connections plus two during startup; allow 25 per instance in `max_connections`.
 - **Redis 7** with `maxmemory-policy noeviction`, AOF persistence and a password, as one endpoint (a standalone server, or a primary behind one failover address). Redis Cluster mode is not supported. The all-in-one setup brings both servers set up this way.
 - **The same settings everywhere.** `.env` (compose) and the ConfigMap and Secret (Kubernetes) use the same variable names; the [Configuration reference](../docs/reference/configuration.md) lists them. `JWT_SECRET` is the same on every instance and never changes after installation. `ADMIN_EMAIL` and `ADMIN_PASSWORD` are read once, when the first admin is created on an empty database; change the password in the UI afterwards.

@@ -53,7 +53,7 @@ services:
       retries: 12
 
   app:
-    image: ${DEPGATE_IMAGE:-ghcr.io/secmods/depgate}:${DEPGATE_VERSION:?Set DEPGATE_VERSION in .env}
+    image: ${DEPGATE_IMAGE:-secmods/depgate}:${DEPGATE_VERSION:?Set DEPGATE_VERSION in .env}
     restart: unless-stopped
     depends_on:
       postgres:

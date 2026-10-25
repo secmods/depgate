@@ -37,7 +37,7 @@ docker push registry.example.com/depgate:1.0.0
 
 Then follow [Install with Docker](./docker), setting `DEPGATE_IMAGE` and `DEPGATE_VERSION` in the setup's `.env` to the image you built (`DEPGATE_IMAGE=depgate`, `DEPGATE_VERSION=1.0.0` for the example above). The deploy scripts never build: they pull the image, or use the one already loaded on the host.
 
-Releases are built by the repository's release workflow and published as `ghcr.io/secmods/depgate:<version>`; `RELEASING.md` in the repository describes it.
+Releases are built by the repository's release workflow and published as `secmods/depgate:<version>` on Docker Hub and `ghcr.io/secmods/depgate:<version>`; `RELEASING.md` in the repository describes it.
 
 ## Run a development environment
 

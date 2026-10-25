@@ -116,7 +116,7 @@ cd depgate/deploy/all-in-one
 ./quickstart.sh
 ```
 
-This starts PostgreSQL, Redis and DepGate from their published images; nothing is built. To run an image you built yourself, run `docker build -t ghcr.io/secmods/depgate:$(node -p "require('./package.json').version") .` in the repository root first; the script then uses that image.
+This starts PostgreSQL, Redis and DepGate from their published images; nothing is built. To run an image you built yourself, run `docker build -t secmods/depgate:$(node -p "require('./package.json').version") .` in the repository root first; the script then uses that image.
 
 Open `https://localhost`, sign in as the admin account the script printed, and copy the `.npmrc` snippet from **Registry** into an empty folder. Then try an install that the starter policies refuse:
 

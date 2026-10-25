@@ -1,6 +1,6 @@
 # Releasing DepGate
 
-A release is a version tag. Pushing it runs `.github/workflows/release.yml`, which publishes the image `ghcr.io/secmods/depgate:<version>`, and the same image on Docker Hub as `secmods/depgate:<version>`, for linux/amd64 and linux/arm64, and creates the GitHub release with three files: `depgate-<version>.tar` (the amd64 image, for hosts without registry access), its `.sha256`, and `deploy-<version>.tar.gz` (the `deploy/` folder). No `latest` tag is published: every deploy setup pins a version. The same tag runs `.github/workflows/docs.yml`, which builds the VitePress site in `docs/` and publishes it to the `gh-pages` branch.
+A release is a version tag. Pushing it runs `.github/workflows/release.yml`, which publishes the image on Docker Hub as `secmods/depgate:<version>` (the one every deploy setup names), and the same image as `ghcr.io/secmods/depgate:<version>`, for linux/amd64 and linux/arm64, and creates the GitHub release with three files: `depgate-<version>.tar` (the amd64 image, for hosts without registry access), its `.sha256`, and `deploy-<version>.tar.gz` (the `deploy/` folder). No `latest` tag is published: every deploy setup pins a version. The same tag runs `.github/workflows/docs.yml`, which builds the VitePress site in `docs/` and publishes it to the `gh-pages` branch.
 
 ## Steps
 
@@ -23,7 +23,7 @@ The workflow refuses a tag on a commit that is not on `main`, a tag whose versio
 ## After the workflow
 
 1. Edit the release notes. The template has two lines to fill in: **Database upgrade** (none, or the migrations this release applies and how long they take on a large database) and **Settings** (new or renamed variables).
-2. Check that `docker pull ghcr.io/secmods/depgate:<version>` and `docker pull secmods/depgate:<version>` work without signing in. The GitHub package must be public (the package's settings, "Change visibility"), and so must the Docker Hub repository.
+2. Check that `docker pull secmods/depgate:<version>` and `docker pull ghcr.io/secmods/depgate:<version>` work without signing in. The GitHub package must be public (the package's settings, "Change visibility"), and so must the Docker Hub repository.
 
 ## One-time setup
 

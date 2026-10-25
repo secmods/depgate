@@ -56,7 +56,7 @@ Plain manifests with a Kustomize `kustomization.yaml`, applied with `kubectl app
 
 ### Registry mirror
 
-When the cluster cannot pull from `ghcr.io`, mirror the image and set `newName` under `images:` in `kustomization.yaml`. If the mirror needs sign-in, create the pull secret the Deployment already names:
+When the cluster cannot pull from Docker Hub, set `newName: ghcr.io/secmods/depgate` to pull the same image from GitHub, or mirror the image and set `newName` under `images:` in `kustomization.yaml`. If the mirror needs sign-in, create the pull secret the Deployment already names:
 
 ```bash
 kubectl -n depgate create secret docker-registry depgate-registry --docker-server=registry.example.com --docker-username=… --docker-password=…

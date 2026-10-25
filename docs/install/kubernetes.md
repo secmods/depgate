@@ -76,7 +76,7 @@ Both replicas start at the same time. One creates the schema, the settings and t
 
 ### Registry mirror
 
-When the cluster cannot pull from `ghcr.io`, set `newName: secmods/depgate` to pull the same image from Docker Hub, or mirror `ghcr.io/secmods/depgate:<version>` and set `newName` under `images:` in `kustomization.yaml`. If the mirror needs sign-in, create the pull secret the Deployment already names:
+When the cluster cannot pull from Docker Hub, or its nodes share one address and reach Docker Hub's limit on pulls without signing in, set `newName: ghcr.io/secmods/depgate` to pull the same image from GitHub, or mirror `secmods/depgate:<version>` and set `newName` under `images:` in `kustomization.yaml`. If the mirror needs sign-in, create the pull secret the Deployment already names:
 
 ```bash
 kubectl -n depgate create secret docker-registry depgate-registry \

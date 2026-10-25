@@ -12,7 +12,7 @@ name: depgate-prod
 
 services:
   app:
-    image: ${DEPGATE_IMAGE:-ghcr.io/secmods/depgate}:${DEPGATE_VERSION:?Set DEPGATE_VERSION in .env}
+    image: ${DEPGATE_IMAGE:-secmods/depgate}:${DEPGATE_VERSION:?Set DEPGATE_VERSION in .env}
     restart: unless-stopped
     # Every tuning variable in .env (SMTP, TTLs, proxy, CA bundle...) reaches the app.
     env_file: .env

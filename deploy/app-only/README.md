@@ -14,7 +14,7 @@ One compose file with the `app` service, project `depgate-prod`. PostgreSQL and 
 
 ## Your PostgreSQL and Redis
 
-- **PostgreSQL 15 or later** (17 recommended). Create an empty database and a user that owns it; DepGate creates the tables on first start and upgrades them on later starts. No extension is needed. For TLS, `DB_SSL=true`, and `DB_SSL_CA_FILE=/certs/ca.crt` to verify the server with the CA in `certs/ca.crt`. Allow 25 connections per DepGate instance.
+- **PostgreSQL 15 or later** (17 recommended). Create an empty database and a user that owns it, once, before the first start: DepGate creates the tables on first start and upgrades them on later starts, but not the database or the user. As a PostgreSQL superuser, `CREATE ROLE depgate LOGIN PASSWORD '…';` then `CREATE DATABASE depgate OWNER depgate;` (or the service's console). Use a new database: one that already has tables, such as a development database, stops DepGate at startup. No extension is needed. For TLS, `DB_SSL=true`, and `DB_SSL_CA_FILE=/certs/ca.crt` to verify the server with the CA in `certs/ca.crt`. Allow 25 connections per DepGate instance.
 - **Redis 7**, one endpoint, with `maxmemory-policy noeviction`, AOF persistence and a password. Managed services (ElastiCache, Azure Cache for Redis, Memorystore) often default to an evicting policy, which loses queued jobs silently: change it in the service's console. They also block `CONFIG`, so DepGate cannot read the policy and `/readyz` reports it as `unknown`. Alternatively point `QUEUE_REDIS_URL` at a Redis set up that way and use the main one as a cache. `rediss://` for TLS. Redis Cluster mode is not supported.
 
 ## Install

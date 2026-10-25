@@ -39,7 +39,7 @@ git clone https://github.com/secmods/depgate.git
 cd depgate/deploy
 ```
 
-The image `ghcr.io/secmods/depgate:<version>` is pulled when DepGate first starts; no sign-in is needed. With an internal registry mirror, set `DEPGATE_IMAGE` in `.env` to the mirror's name (and `docker login` once if it needs sign-in). To build the image yourself, see [Build from source](./build-from-source#build-the-production-image).
+The image `ghcr.io/secmods/depgate:<version>` is pulled when DepGate first starts; no sign-in is needed. The same image is on Docker Hub as `secmods/depgate:<version>`: set `DEPGATE_IMAGE=secmods/depgate` in `.env` to pull it from there. With an internal registry mirror, set `DEPGATE_IMAGE` in `.env` to the mirror's name (and `docker login` once if it needs sign-in). To build the image yourself, see [Build from source](./build-from-source#build-the-production-image).
 
 ## Step 2: Choose a setup and configure
 
@@ -58,7 +58,14 @@ The script writes `.env` with a random `JWT_SECRET`, admin password, `DB_PASSWOR
 
 DepGate connects to PostgreSQL and Redis you run elsewhere. Prepare them first:
 
-1. Create an empty PostgreSQL database and a user that owns it. DepGate creates the tables on first start. Allow 25 connections per DepGate instance.
+1. Create an empty PostgreSQL database and a user that owns it. DepGate creates the tables on first start, but not the database or the user. As a PostgreSQL superuser:
+
+   ```sql
+   CREATE ROLE depgate LOGIN PASSWORD '…';      -- DB_USER and DB_PASSWORD
+   CREATE DATABASE depgate OWNER depgate;        -- DB_NAME
+   ```
+
+   Use a new database, not one that already has tables (such as a development database): DepGate refuses to start on it. Allow 25 connections per DepGate instance. See [Requirements](./requirements#database).
 2. Make sure Redis uses `maxmemory-policy noeviction` and AOF persistence, as one endpoint. Redis Cluster mode is not supported.
 
 Then pass the connection details to the script:

@@ -42,7 +42,16 @@ Choose the address people will use, for example `https://depgate.example.com`, a
 
 ## Database
 
-**PostgreSQL 15 or later** (17 recommended). Create an empty database and a user that owns it. DepGate creates its tables on first start and upgrades them on later starts; see [Operate and upgrade](./operations#upgrade). Each DepGate instance opens up to `DB_POOL_SIZE` (20) connections, plus two more while it starts: allow 25 per instance in `max_connections`, so two replicas need about 45 plus the server's own headroom.
+**PostgreSQL 15 or later** (17 recommended). Create an empty database and a user that owns it, once, before DepGate first starts. DepGate creates its tables on first start and upgrades them on later starts (see [Operate and upgrade](./operations#upgrade)), but it does not create the database or the user. As a PostgreSQL superuser:
+
+```sql
+CREATE ROLE depgate LOGIN PASSWORD '…';      -- DB_USER and DB_PASSWORD
+CREATE DATABASE depgate OWNER depgate;        -- DB_NAME
+```
+
+On a managed service (Amazon RDS, Cloud SQL, Azure Database for PostgreSQL), create them in the service's console or with the same statements. Use a new database: one that already has tables, such as a development database, stops DepGate at startup with `relation "…" already exists`, and nothing is changed. The all-in-one Docker setup creates its own database and needs none of this.
+
+Each DepGate instance opens up to `DB_POOL_SIZE` (20) connections, plus two more while it starts: allow 25 per instance in `max_connections`, so two replicas need about 45 plus the server's own headroom.
 
 **Redis 7** (or compatible), configured with:
 

@@ -1,6 +1,6 @@
 # Releasing DepGate
 
-A release is a version tag. Pushing it runs `.github/workflows/release.yml`, which publishes the image `ghcr.io/secmods/depgate:<version>` for linux/amd64 and linux/arm64 and creates the GitHub release with three files: `depgate-<version>.tar` (the amd64 image, for hosts without registry access), its `.sha256`, and `deploy-<version>.tar.gz` (the `deploy/` folder). No `latest` tag is published: every deploy setup pins a version. The same tag runs `.github/workflows/docs.yml`, which builds the VitePress site in `docs/` and publishes it to the `gh-pages` branch.
+A release is a version tag. Pushing it runs `.github/workflows/release.yml`, which publishes the image `ghcr.io/secmods/depgate:<version>`, and the same image on Docker Hub as `secmods/depgate:<version>`, for linux/amd64 and linux/arm64, and creates the GitHub release with three files: `depgate-<version>.tar` (the amd64 image, for hosts without registry access), its `.sha256`, and `deploy-<version>.tar.gz` (the `deploy/` folder). No `latest` tag is published: every deploy setup pins a version. The same tag runs `.github/workflows/docs.yml`, which builds the VitePress site in `docs/` and publishes it to the `gh-pages` branch.
 
 ## Steps
 
@@ -23,7 +23,7 @@ The workflow refuses a tag on a commit that is not on `main`, a tag whose versio
 ## After the workflow
 
 1. Edit the release notes. The template has two lines to fill in: **Database upgrade** (none, or the migrations this release applies and how long they take on a large database) and **Settings** (new or renamed variables).
-2. Check that `docker pull ghcr.io/secmods/depgate:<version>` works without signing in. The package must be public (GitHub: the package's settings, "Change visibility").
+2. Check that `docker pull ghcr.io/secmods/depgate:<version>` and `docker pull secmods/depgate:<version>` work without signing in. The GitHub package must be public (the package's settings, "Change visibility"), and so must the Docker Hub repository.
 
 ## One-time setup
 
@@ -43,5 +43,15 @@ The "Protect main" ruleset requires a pull request and passing checks for every 
 
 Other setup:
 
+- Docker Hub: the public repository `secmods/depgate`, and an account that may push to it. Create an access token for that account with Read & Write scope (Docker Hub → Account settings → Personal access tokens). Store both in an environment `publish` that only version tags may use, so only the release job reads them. Not in `release`: a tag run must never be able to read its deploy key.
+
+  ```bash
+  echo '{"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}' | gh api -X PUT repos/secmods/depgate/environments/publish --input -
+  gh api -X POST repos/secmods/depgate/environments/publish/deployment-branch-policies -f name='v*' -f type=tag
+  gh secret set DOCKERHUB_USERNAME --repo secmods/depgate --env publish --body '<docker hub user>'
+  gh secret set DOCKERHUB_TOKEN --repo secmods/depgate --env publish     # paste the token when asked
+  ```
+
+  Without them the release stops at "Sign in to Docker Hub", before anything is pushed.
 - The `secmods` organization owns the package `depgate`. When this repository is not in that organization, the workflow's own token cannot push there: create a token with `write:packages` on the organization and store it as the repository secret `GHCR_TOKEN`. The workflow uses it when present, otherwise `GITHUB_TOKEN`.
 - Nothing in `deploy/` names the registry beyond the image name; mirrors are set by the customer (`DEPGATE_IMAGE`, or `newName` in `kustomization.yaml`).

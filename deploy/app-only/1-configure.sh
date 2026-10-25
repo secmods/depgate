@@ -5,7 +5,8 @@
 #   REDIS_URL='rediss://:pass@redis.corp:6380' ./1-configure.sh
 #
 # Required inputs: DB_HOST, DB_PASSWORD, REDIS_URL. Postgres and Redis on this same host, outside Docker,
-# are reached as host.docker.internal.
+# are reached as host.docker.internal. The database must exist, empty and owned by DB_USER, before
+# ./3-run.sh: DepGate creates its tables but not the database. The script prints the SQL for it.
 # Other inputs (environment variables, all optional):
 #   DB_PORT, DB_USER, DB_NAME, DB_SSL        default 5432, depgate, depgate, false
 #   DISABLE_SSL       true: plain HTTP only; your own proxy does TLS.  default false
@@ -92,6 +93,15 @@ SSL          $([ "$disable_ssl" = true ] && echo "disabled: plain HTTP on port $
 Image        $image:$version
 Database     $db_host:$db_port/$db_name
 Admin        $admin_email / $admin_password   (stored in .env; used only when the account is first created)
+
+Before DepGate first starts, database $db_name on $db_host must exist, be empty, and be owned by $db_user.
+DepGate creates its tables, not the database. Once, as a PostgreSQL superuser (skip what already exists):
+
+  CREATE ROLE "$db_user" LOGIN PASSWORD '<DB_PASSWORD from .env>';
+  CREATE DATABASE "$db_name" OWNER "$db_user";
+
+Use a new database: one that already has tables, such as a development database, stops DepGate at startup.
+
 MSG
 if [ "$disable_ssl" = true ]; then
   echo "Next: ./3-run.sh   (no certificate needed; point your proxy at http://<this host>:$http_port)"

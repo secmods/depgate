@@ -355,12 +355,47 @@ export const NAMESPACE_TIPS: Record<string, string> = {
 };
 
 export function versionText(range: string | undefined): string {
+  const parts = versionParts(range);
+  return parts.length ? parts.join(', ') : 'Any version';
+}
+
+/** The `||` clauses of a stored range as people read them: `=1.2.3` shows as 1.2.3. Empty for any version. */
+export function versionParts(range: string | null | undefined): string[] {
   const value = (range ?? '').trim();
-  if (!value || value === '*') return 'Any version';
+  if (!value || value === '*') return [];
   return value
     .split(/\s*\|\|\s*/)
     .map((part) => part.trim().replace(/^=\s*/, ''))
-    .join(', ');
+    .filter(Boolean);
+}
+
+const VERSION_ORDER = new Intl.Collator('en', { numeric: true });
+
+/** versionParts in version order (0.1.2 before 0.1.10), for lists nobody typed in an order. */
+export function sortedVersionParts(range: string | null | undefined): string[] {
+  return versionParts(range).sort(VERSION_ORDER.compare);
+}
+
+const DOTTED_VERSION = /^(\d+(?:\.\d+)*\.)(\d+)$/;
+
+/**
+ * Sorted versions with each run of three or more consecutive releases shown as one entry:
+ * 0.1.0, 0.1.1, 0.1.2, 0.1.3 shows as 0.1.0 – 0.1.3. Display only; a run is still those versions
+ * and nothing between them, such as 0.1.2rc1. Anything that is not plain dotted numbers stays as it is.
+ */
+export function versionRuns(sorted: readonly string[]): string[] {
+  const runs: string[] = [];
+  let start = 0;
+  for (let i = 1; i <= sorted.length; i++) {
+    const prev = DOTTED_VERSION.exec(sorted[i - 1]);
+    const next = i < sorted.length ? DOTTED_VERSION.exec(sorted[i]) : null;
+    if (prev && next && prev[1] === next[1] && Number(next[2]) === Number(prev[2]) + 1) continue;
+    const length = i - start;
+    if (length >= 3) runs.push(`${sorted[start]} – ${sorted[i - 1]}`);
+    else runs.push(...sorted.slice(start, i));
+    start = i;
+  }
+  return runs;
 }
 
 function plural(count: number, unit: string): string {

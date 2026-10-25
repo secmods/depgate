@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
 import path from 'path';
+import { STORED_VERSION_MAX_LENGTH, versionSpecError } from './version-range.js';
 
 /** Ecosystems DepGate imports. VS Code feeds are ignored. */
 export const SYNC_ECOSYSTEMS = [
@@ -53,6 +54,8 @@ export type Manifest = {
 export type SnapshotRecord = {
   name: string;
   id?: string;
+  /** Present when the feed pins specific malicious releases; omitted means every version. */
+  versions?: string[];
 };
 
 export type ChangeOp = {
@@ -60,7 +63,32 @@ export type ChangeOp = {
   modified: string;
   name: string;
   id?: string;
+  versions?: string[];
 };
+
+/** Parse the feed `versions` field; absent means all versions, present must be a string array. */
+export function parseFeedVersions(value: unknown): string[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || !value.every((v) => typeof v === 'string')) {
+    throw new Error('Feed versions must be an array of strings');
+  }
+  return value;
+}
+
+const VERSION_ORDER = new Intl.Collator('en', { numeric: true });
+
+/**
+ * Map a feed `versions` list to the stored version_range syntax.
+ * Omitted or empty `versions` means every release is malicious (null range). A list that does
+ * not fit the column or holds a version the range syntax cannot express also blocks every
+ * release: dropping part of the list would let those malicious versions through.
+ */
+export function feedVersionsToRange(ecosystem: string, versions: string[] | undefined): string | null {
+  const unique = [...new Set((versions ?? []).map((v) => v.trim()))].sort(VERSION_ORDER.compare);
+  if (unique.length === 0 || unique.includes('')) return null;
+  const spec = unique.map((v) => `=${v}`).join('||');
+  return versionSpecError(spec, [ecosystem], STORED_VERSION_MAX_LENGTH) == null ? spec : null;
+}
 
 export function sha256Hex(content: Buffer | string): string {
   return createHash('sha256').update(content).digest('hex');
@@ -124,9 +152,15 @@ export function appendSnapshot(target: SnapshotRecord[], content: string): void 
   for (const line of content.split('\n')) {
     if (!line) continue;
     try {
-      const obj = JSON.parse(line) as { name?: string; id?: string };
+      const obj = JSON.parse(line) as { name?: string; id?: string; versions?: unknown };
       if (!obj?.name) continue;
-      target.push({ name: obj.name, id: obj.id });
+      let versions: string[] | undefined;
+      try {
+        versions = parseFeedVersions(obj.versions);
+      } catch {
+        continue;
+      }
+      target.push({ name: obj.name, id: obj.id, versions });
     } catch {
       /* skip malformed snapshot line */
     }
@@ -138,17 +172,25 @@ export function selectChangeOps(content: string, watermark: string): ChangeOp[] 
   const ops: ChangeOp[] = [];
   for (const line of content.split('\n')) {
     if (!line) continue;
-    let op: ChangeOp;
+    let raw: ChangeOp & { versions?: unknown };
     try {
-      op = JSON.parse(line) as ChangeOp;
+      raw = JSON.parse(line) as ChangeOp & { versions?: unknown };
     } catch {
       throw new Error('Changes file has a malformed JSON line');
     }
-    if (typeof op.modified !== 'string') throw new Error('Change op is missing modified');
-    if (op.modified <= watermark) break;
-    if (op.op !== 'upsert' && op.op !== 'delete') throw new Error(`Unknown change op: ${String(op.op)}`);
-    if (!op.name) throw new Error('Change op is missing name');
-    ops.push({ op: op.op, modified: op.modified, name: op.name, id: op.id });
+    if (typeof raw.modified !== 'string') throw new Error('Change op is missing modified');
+    if (raw.modified <= watermark) break;
+    if (raw.op !== 'upsert' && raw.op !== 'delete') throw new Error(`Unknown change op: ${String(raw.op)}`);
+    if (!raw.name) throw new Error('Change op is missing name');
+    let versions: string[] | undefined;
+    if (raw.op === 'upsert') {
+      try {
+        versions = parseFeedVersions(raw.versions);
+      } catch {
+        throw new Error('Change upsert has invalid versions');
+      }
+    }
+    ops.push({ op: raw.op, modified: raw.modified, name: raw.name, id: raw.id, versions });
   }
   return ops;
 }

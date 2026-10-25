@@ -3,6 +3,7 @@ import {
   appendSnapshot,
   assertManifest,
   decideSync,
+  feedVersionsToRange,
   resolveFeedFile,
   selectChangeOps,
   sha256Hex,
@@ -53,6 +54,10 @@ describe('decideSync', () => {
     expect(decideSync(feed, '2026-01-01T00:00:00Z')).toBe('full');
   });
 
+  it('full-loads when a migration cleared the watermark', () => {
+    expect(decideSync(feed, '')).toBe('full');
+  });
+
   it('does nothing when the watermark matches generated_at', () => {
     expect(decideSync(feed, generatedAt)).toBe('none');
   });
@@ -79,6 +84,13 @@ describe('selectChangeOps', () => {
     expect(ops.map((op) => op.name)).toEqual(['embiggen', 'gone']);
     expect(ops[0]).toMatchObject({ op: 'upsert', id: 'MAL-1' });
     expect(ops[1]).toMatchObject({ op: 'delete' });
+  });
+
+  it('keeps pinned versions on upsert ops', () => {
+    const line =
+      '{"op":"upsert","modified":"2026-10-21T23:52:32Z","name":"litellm","id":"MAL-2026-2144","versions":["1.107.0","1.82.7","1.82.8"]}';
+    const ops = selectChangeOps(line, '2026-10-02T06:00:00Z');
+    expect(ops[0].versions).toEqual(['1.107.0', '1.82.7', '1.82.8']);
   });
 
   it('returns every op when the watermark is older than all of them', () => {
@@ -114,7 +126,41 @@ describe('assertManifest', () => {
   });
 });
 
+describe('feedVersionsToRange', () => {
+  it('returns null when versions are omitted', () => {
+    expect(feedVersionsToRange('pypi', undefined)).toBeNull();
+  });
+
+  it('maps pinned feed versions to exact-match clauses', () => {
+    expect(feedVersionsToRange('pypi', ['1.107.0', '1.82.7', '1.82.8'])).toBe('=1.82.7||=1.82.8||=1.107.0');
+  });
+
+  it('lists versions in version order', () => {
+    expect(feedVersionsToRange('pypi', ['0.1.10', '0.1.2', '0.1.0'])).toBe('=0.1.0||=0.1.2||=0.1.10');
+  });
+
+  it('drops duplicate versions', () => {
+    expect(feedVersionsToRange('npm', ['1.0.0', ' 1.0.0', '2.0.0'])).toBe('=1.0.0||=2.0.0');
+  });
+
+  it('blocks every version when the list is longer than the column', () => {
+    const versions = Array.from({ length: 30 }, (_, i) => `1.0.${i}`);
+    expect(feedVersionsToRange('npm', versions)).toBeNull();
+  });
+
+  it('blocks every version when one version cannot be stored', () => {
+    expect(feedVersionsToRange('npm', ['1.0.0', '^2.0.0'])).toBeNull();
+    expect(feedVersionsToRange('npm', ['1.0.0', ''])).toBeNull();
+  });
+});
+
 describe('appendSnapshot', () => {
+  it('keeps pinned versions from snapshot lines', () => {
+    const records: SnapshotRecord[] = [];
+    appendSnapshot(records, '{"name":"litellm","id":"MAL-1","versions":["1.82.8","1.82.7"]}\n');
+    expect(records[0].versions).toEqual(['1.82.8', '1.82.7']);
+  });
+
   it('loads a shard larger than the spread argument limit', () => {
     const count = 150_000;
     const body = `${'{"name":"pkg","id":"MAL-1"}\n'.repeat(count)}`;

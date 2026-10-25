@@ -100,6 +100,7 @@ type MemRow = {
   ecosystem: string;
   source: 'default' | 'custom';
   reason: string | null;
+  versionRange: string | null;
   overrideStatus: 'BLOCK' | 'ALLOW';
 };
 
@@ -121,14 +122,19 @@ function createMemoryStore(seed: MemRow[] = []) {
       for (const row of incoming) {
         const existing = rows.find((item) => item.ecosystem === row.ecosystem && item.name === row.name);
         if (existing?.source === 'custom') continue;
-        if (existing) existing.reason = row.reason;
-        else rows.push({ ...row, source: 'default', overrideStatus: 'BLOCK' });
+        if (existing) {
+          existing.reason = row.reason;
+          existing.versionRange = row.versionRange;
+        } else rows.push({ ...row, source: 'default', overrideStatus: 'BLOCK' });
       }
     },
     async updateDefault(incoming) {
       for (const row of incoming) {
         const existing = rows.find((item) => item.ecosystem === row.ecosystem && item.name === row.name);
-        if (existing?.source === 'default') existing.reason = row.reason;
+        if (existing?.source === 'default') {
+          existing.reason = row.reason;
+          existing.versionRange = row.versionRange;
+        }
       }
     },
     async deleteDefaultByName(ecosystem, names) {
@@ -224,9 +230,9 @@ async function packArchive(manifest: Manifest, files: Record<string, string>): P
 describe('applySnapshot', () => {
   it('inserts new rows, updates feed rows, and keeps custom overrides', async () => {
     const mem = createMemoryStore([
-      { name: 'kept', ecosystem: 'npm', source: 'default', reason: 'old', overrideStatus: 'ALLOW' },
-      { name: 'custom-pkg', ecosystem: 'npm', source: 'custom', reason: 'admin', overrideStatus: 'BLOCK' },
-      { name: 'stale', ecosystem: 'npm', source: 'default', reason: 'gone', overrideStatus: 'BLOCK' },
+      { name: 'kept', ecosystem: 'npm', source: 'default', reason: 'old', versionRange: null, overrideStatus: 'ALLOW' },
+      { name: 'custom-pkg', ecosystem: 'npm', source: 'custom', reason: 'admin', versionRange: null, overrideStatus: 'BLOCK' },
+      { name: 'stale', ecosystem: 'npm', source: 'default', reason: 'gone', versionRange: null, overrideStatus: 'BLOCK' },
     ]);
 
     const result = await applySnapshot(mem.store, 'npm', [
@@ -242,9 +248,32 @@ describe('applySnapshot', () => {
     expect(mem.rows.find((row) => row.name === 'stale')).toBeUndefined();
   });
 
+  it('stores pinned versions from the feed snapshot', async () => {
+    const mem = createMemoryStore();
+    await applySnapshot(mem.store, 'pypi', [
+      { name: 'litellm', id: 'MAL-2026-2144', versions: ['1.107.0', '1.82.7', '1.82.8'] },
+    ]);
+    expect(mem.rows[0].versionRange).toBe('=1.82.7||=1.82.8||=1.107.0');
+  });
+
+  it('clears version range when the feed omits versions', async () => {
+    const mem = createMemoryStore([
+      {
+        name: 'mime',
+        ecosystem: 'npm',
+        source: 'default',
+        reason: 'MAL-0',
+        versionRange: '=1.0.0',
+        overrideStatus: 'BLOCK',
+      },
+    ]);
+    await applySnapshot(mem.store, 'npm', [{ name: 'mime', id: 'MAL-1' }]);
+    expect(mem.rows[0].versionRange).toBeNull();
+  });
+
   it('does not delete rows outside a limited snapshot', async () => {
     const mem = createMemoryStore([
-      { name: 'stale', ecosystem: 'npm', source: 'default', reason: 'old', overrideStatus: 'BLOCK' },
+      { name: 'stale', ecosystem: 'npm', source: 'default', reason: 'old', versionRange: null, overrideStatus: 'BLOCK' },
     ]);
     const result = await applySnapshot(
       mem.store,
@@ -263,16 +292,25 @@ describe('applySnapshot', () => {
 describe('applyChanges', () => {
   it('upserts and deletes feed rows without touching custom rows', async () => {
     const mem = createMemoryStore([
-      { name: 'old-pkg', ecosystem: 'npm', source: 'default', reason: 'MAL-0', overrideStatus: 'BLOCK' },
-      { name: 'custom-pkg', ecosystem: 'npm', source: 'custom', reason: 'admin', overrideStatus: 'ALLOW' },
+      { name: 'old-pkg', ecosystem: 'npm', source: 'default', reason: 'MAL-0', versionRange: null, overrideStatus: 'BLOCK' },
+      { name: 'custom-pkg', ecosystem: 'npm', source: 'custom', reason: 'admin', versionRange: null, overrideStatus: 'ALLOW' },
     ]);
     const result = await applyChanges(mem.store, 'npm', [
       { op: 'upsert', modified: '2026-10-02T07:30:00Z', name: 'custom-pkg', id: 'MAL-9' },
-      { op: 'upsert', modified: '2026-10-02T07:00:00Z', name: 'new-pkg', id: 'MAL-2' },
+      {
+        op: 'upsert',
+        modified: '2026-10-02T07:00:00Z',
+        name: 'new-pkg',
+        id: 'MAL-2',
+        versions: ['0.11.97'],
+      },
       { op: 'delete', modified: '2026-10-02T06:30:00Z', name: 'old-pkg' },
     ]);
     expect(result).toMatchObject({ added: 1, removed: 1, skippedCustom: 1 });
-    expect(mem.rows.find((row) => row.name === 'new-pkg')).toMatchObject({ reason: 'MAL-2' });
+    expect(mem.rows.find((row) => row.name === 'new-pkg')).toMatchObject({
+      reason: 'MAL-2',
+      versionRange: '=0.11.97',
+    });
     expect(mem.rows.find((row) => row.name === 'old-pkg')).toBeUndefined();
     expect(mem.rows.find((row) => row.name === 'custom-pkg')).toMatchObject({ reason: 'admin', overrideStatus: 'ALLOW' });
   });
@@ -286,10 +324,10 @@ describe('executeMaliciousSync', () => {
     const manifest = npmManifest(snapshot, '');
     const archive = await packArchive(manifest, { 'npm.jsonl': snapshot });
     const mem = createMemoryStore([
-      { name: 'kept', ecosystem: 'npm', source: 'default', reason: 'old', overrideStatus: 'ALLOW' },
-      { name: 'stale', ecosystem: 'npm', source: 'default', reason: 'old', overrideStatus: 'BLOCK' },
-      { name: 'custom-pkg', ecosystem: 'npm', source: 'custom', reason: 'admin', overrideStatus: 'BLOCK' },
-      { name: 'vs-ext', ecosystem: 'vscode', source: 'default', reason: 'old', overrideStatus: 'BLOCK' },
+      { name: 'kept', ecosystem: 'npm', source: 'default', reason: 'old', versionRange: null, overrideStatus: 'ALLOW' },
+      { name: 'stale', ecosystem: 'npm', source: 'default', reason: 'old', versionRange: null, overrideStatus: 'BLOCK' },
+      { name: 'custom-pkg', ecosystem: 'npm', source: 'custom', reason: 'admin', versionRange: null, overrideStatus: 'BLOCK' },
+      { name: 'vs-ext', ecosystem: 'vscode', source: 'default', reason: 'old', versionRange: null, overrideStatus: 'BLOCK' },
     ]);
     const urls: string[] = [];
 
@@ -326,8 +364,8 @@ describe('executeMaliciousSync', () => {
     ].join('\n');
     const manifest = npmManifest('', changes);
     const mem = createMemoryStore([
-      { name: 'old-pkg', ecosystem: 'npm', source: 'default', reason: 'MAL-0', overrideStatus: 'BLOCK' },
-      { name: 'custom-pkg', ecosystem: 'npm', source: 'custom', reason: 'admin', overrideStatus: 'ALLOW' },
+      { name: 'old-pkg', ecosystem: 'npm', source: 'default', reason: 'MAL-0', versionRange: null, overrideStatus: 'BLOCK' },
+      { name: 'custom-pkg', ecosystem: 'npm', source: 'custom', reason: 'admin', versionRange: null, overrideStatus: 'ALLOW' },
     ]);
     mem.setWatermark('2026-10-02T06:00:00Z');
     const urls: string[] = [];

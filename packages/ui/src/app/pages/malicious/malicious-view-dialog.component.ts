@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MaliciousPackage } from '../../services/malicious.service';
 import { ecosystemLabel } from '../../shared/status';
 import { MODAL_PKG } from '../../tokens';
+import { sortedVersionParts, versionRuns } from '../policies/policy-rules';
 
 @Component({
   selector: 'app-malicious-view-dialog',
@@ -28,9 +29,15 @@ import { MODAL_PKG } from '../../tokens';
       </div>
 
       <div class="dg-detail-list">
-        <div class="dg-detail-row">
-          <div class="dg-detail-label">Versions</div>
-          <div class="dg-detail-value"><span class="dg-chip">{{ pkg?.versionRange?.trim() || 'All versions' }}</span></div>
+        <div class="dg-detail-row" [class.is-stacked]="runs.length > 3">
+          <div class="dg-detail-label">Versions{{ versions.length > 1 ? ' (' + versions.length + ')' : '' }}</div>
+          <div class="dg-detail-value">
+            @for (version of runs; track version) {
+              <span class="dg-chip font-mono">{{ version }}</span>
+            } @empty {
+              <span class="dg-chip">All versions</span>
+            }
+          </div>
         </div>
         <div class="dg-detail-row">
           <div class="dg-detail-label">Advisory</div>
@@ -64,6 +71,14 @@ import { MODAL_PKG } from '../../tokens';
 export class MaliciousViewDialogComponent {
   pkg = inject(MODAL_PKG, { optional: true }) as MaliciousPackage | null;
   activeModal = inject(NgbActiveModal);
+
+  get versions(): string[] {
+    return sortedVersionParts(this.pkg?.versionRange);
+  }
+
+  get runs(): string[] {
+    return versionRuns(this.versions);
+  }
 
   get allowed(): boolean {
     return this.pkg?.overrideStatus === 'ALLOW';
